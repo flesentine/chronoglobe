@@ -5,6 +5,7 @@
   if (typeof originalGlobe !== 'function') return;
 
   const COUNTRY_DATA = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
+  const REFERENCE_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
 
   window.Globe = () => host => {
     const globe = originalGlobe()(host);
@@ -20,81 +21,74 @@
       if (globe.map.getLayer('country-borders')) {
         globe.map.setLayoutProperty('country-borders', 'visibility', showBorders ? 'visible' : 'none');
       }
-      if (globe.map.getLayer('country-labels')) {
-        globe.map.setLayoutProperty('country-labels', 'visibility', showLabels ? 'visible' : 'none');
+      if (globe.map.getLayer('country-reference-labels')) {
+        globe.map.setLayoutProperty('country-reference-labels', 'visibility', showLabels ? 'visible' : 'none');
       }
     };
 
     const installLayers = () => {
-      if (!globe.map || globe.map.getSource('country-boundaries')) {
-        applyMode(requestedMode);
-        return;
+      if (!globe.map) return;
+
+      if (!globe.map.getSource('country-boundaries')) {
+        globe.map.addSource('country-boundaries', {
+          type: 'geojson',
+          data: COUNTRY_DATA,
+          generateId: true
+        });
+
+        globe.map.addLayer({
+          id: 'country-borders',
+          type: 'line',
+          source: 'country-boundaries',
+          minzoom: 1.7,
+          maxzoom: 11,
+          layout: { visibility: 'visible' },
+          paint: {
+            'line-color': [
+              'interpolate', ['linear'], ['zoom'],
+              1.7, 'rgba(220,245,255,0.26)',
+              4, 'rgba(220,245,255,0.40)',
+              8, 'rgba(220,245,255,0.56)'
+            ],
+            'line-width': [
+              'interpolate', ['linear'], ['zoom'],
+              1.7, 0.45,
+              5, 0.8,
+              9, 1.15
+            ],
+            'line-blur': 0.15
+          }
+        });
       }
 
-      globe.map.addSource('country-boundaries', {
-        type: 'geojson',
-        data: COUNTRY_DATA,
-        generateId: true
-      });
+      if (!globe.map.getSource('country-reference')) {
+        globe.map.addSource('country-reference', {
+          type: 'raster',
+          tiles: [REFERENCE_TILES],
+          tileSize: 256,
+          minzoom: 0,
+          maxzoom: 16,
+          attribution: 'Reference boundaries and places © Esri'
+        });
 
-      globe.map.addLayer({
-        id: 'country-borders',
-        type: 'line',
-        source: 'country-boundaries',
-        minzoom: 1.7,
-        maxzoom: 11,
-        layout: { visibility: 'visible' },
-        paint: {
-          'line-color': [
-            'interpolate', ['linear'], ['zoom'],
-            1.7, 'rgba(220,245,255,0.28)',
-            4, 'rgba(220,245,255,0.42)',
-            8, 'rgba(220,245,255,0.58)'
-          ],
-          'line-width': [
-            'interpolate', ['linear'], ['zoom'],
-            1.7, 0.45,
-            5, 0.8,
-            9, 1.15
-          ],
-          'line-blur': 0.15
-        }
-      });
-
-      globe.map.addLayer({
-        id: 'country-labels',
-        type: 'symbol',
-        source: 'country-boundaries',
-        minzoom: 2.3,
-        maxzoom: 7.2,
-        layout: {
-          visibility: 'none',
-          'symbol-placement': 'point',
-          'text-field': [
-            'coalesce',
-            ['get', 'ADMIN'],
-            ['get', 'name'],
-            ['get', 'NAME']
-          ],
-          'text-size': [
-            'interpolate', ['linear'], ['zoom'],
-            2.3, 10,
-            4.5, 12,
-            7, 14
-          ],
-          'text-font': ['Open Sans Semibold'],
-          'text-letter-spacing': 0.04,
-          'text-max-width': 8,
-          'text-allow-overlap': false,
-          'text-ignore-placement': false
-        },
-        paint: {
-          'text-color': 'rgba(242,250,255,0.92)',
-          'text-halo-color': 'rgba(2,8,18,0.9)',
-          'text-halo-width': 1.4,
-          'text-halo-blur': 0.5
-        }
-      });
+        globe.map.addLayer({
+          id: 'country-reference-labels',
+          type: 'raster',
+          source: 'country-reference',
+          minzoom: 2.1,
+          maxzoom: 9.5,
+          layout: { visibility: 'none' },
+          paint: {
+            'raster-opacity': [
+              'interpolate', ['linear'], ['zoom'],
+              2.1, 0.62,
+              4.5, 0.78,
+              8.5, 0.68
+            ],
+            'raster-fade-duration': 120
+          }
+        });
+      }
 
       applyMode(requestedMode);
     };
@@ -108,7 +102,9 @@
       if (globe._loaded) installLayers();
       else globe.map.on('load', installLayers);
       globe.map.on('styledata', () => {
-        if (globe._loaded && !globe.map.getSource('country-boundaries')) installLayers();
+        if (globe._loaded && (!globe.map.getSource('country-boundaries') || !globe.map.getSource('country-reference'))) {
+          installLayers();
+        }
       });
     }
 
