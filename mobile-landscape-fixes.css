@@ -1,0 +1,105 @@
+/* Mobile/tablet landscape refinements */
+@media (orientation: landscape) and (max-height: 620px) and (max-width: 1100px) {
+  .globe-stage { overflow: hidden; }
+
+  /* Keep the help control away from the bottom action area. */
+  .howto-btn {
+    top: 12px;
+    left: 12px;
+    bottom: auto;
+    width: 40px;
+    min-height: 40px;
+    padding: 0;
+    font-size: 0;
+    border-radius: 12px;
+  }
+  .howto-btn::after {
+    content: "ⓘ";
+    font-size: 18px;
+  }
+
+  /* Hide help while the answer card is open so no icons overlap it. */
+  .globe-stage:has(.score-dock.show) .howto-btn {
+    display: none;
+  }
+
+  /* Make the result card shorter and reserve space for Next Fact. */
+  .score-dock {
+    left: 18px;
+    right: 18px;
+    bottom: 14px;
+    width: auto;
+    transform: translateY(12px);
+    grid-template-columns: 1.35fr .8fr .8fr;
+    padding: 14px 238px 14px 16px;
+    max-height: calc(100% - 86px);
+    overflow: auto;
+  }
+  .score-dock.show {
+    transform: translateY(0);
+  }
+  .score-cell {
+    padding: 4px 14px;
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+  }
+  .score-cell:last-child { border-right: 0; }
+  .score-copy {
+    max-height: 42px;
+    overflow: auto;
+  }
+
+  /* Once an answer is revealed, put the Next button inside the result area. */
+  .action-dock.with-score {
+    left: auto;
+    right: 36px;
+    bottom: 34px;
+    transform: none;
+    width: 184px;
+    display: block;
+    z-index: 8;
+  }
+  .action-dock.with-score #hintBtn,
+  .action-dock.with-score #lockBtn {
+    display: none;
+  }
+  .action-dock.with-score #nextBtn {
+    display: block;
+    width: 100%;
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  /* Normal-round controls remain centered and clear of zoom controls. */
+  .action-dock:not(.with-score) {
+    left: 50%;
+    right: auto;
+    bottom: 12px;
+    transform: translateX(-50%);
+    width: min(390px, calc(100% - 150px));
+  }
+  .zoom-controls {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 460px) and (max-width: 900px) {
+  .score-dock {
+    top: 52px;
+    bottom: 8px;
+    max-height: none;
+    padding-right: 206px;
+    grid-template-columns: 1fr 1fr;
+  }
+  .score-cell:first-child {
+    grid-column: 1 / -1;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .action-dock.with-score {
+    right: 26px;
+    bottom: 24px;
+    width: 164px;
+  }
+}
