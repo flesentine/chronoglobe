@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#06111f" />
+  <title>ChronoGlobe — History Hunt: Live Imagery</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <aside class="sidebar">
+      <div class="brand-row">
+        <div class="brand">
+          <div class="logo">◉</div>
+          <div>
+            <h1>ChronoGlobe</h1>
+            <p>History is somewhere.</p>
+          </div>
+        </div>
+        <button class="icon-btn" id="soundBtn" type="button" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span>Round</span><strong id="roundStat">1 / 10</strong></div>
+        <div class="stat"><span>Score</span><strong id="scoreStat">0</strong></div>
+        <div class="stat"><span>Streak</span><strong id="streakStat">0</strong></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+      <section class="card fact-card">
+        <div class="eyebrow">
+          <span class="pill" id="categoryPill">Ancient</span>
+          <span class="pill era" id="eraPill">79 CE</span>
+        </div>
+        <p class="fact" id="factText">A Roman city was buried by the eruption of Mount Vesuvius, preserving streets, villas, and everyday life under volcanic debris.</p>
+<p class="round-helper">Study the clue, explore the globe, and place your marker as precisely as possible.</p>
+        <div class="hint-box" id="hintBox"></div>
+      </section>
+
+      <div class="settings">
+        <div class="select-wrap">
+          <label for="difficulty">Difficulty</label>
+          <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+        <div class="select-wrap">
+          <label for="roundCount">Game length</label>
+          <select id="roundCount">
+            <option value="5">5 rounds</option>
+            <option value="10" selected>10 rounds</option>
+            <option value="15">15 rounds</option>
+          </select>
+        </div>
+      </div>
+    </aside>
+
+    <section class="globe-stage" id="globeStage" aria-label="Interactive globe">
+      <div id="globe"></div>
+      <div class="topbar"><span class="live"></span><span id="statusText">Choose a location</span></div>
+      <div class="guess-toast" id="guessToast">Guess marker placed — lock it in when ready</div>
+      <div class="imagery-badge" data-mode="base" role="status" aria-live="polite"></div>
+      <div class="zoom-controls" aria-label="Globe zoom controls">
+        <button id="zoomInBtn" type="button" aria-label="Zoom in" title="Zoom in">+</button>
+        <button id="zoomOutBtn" type="button" aria-label="Zoom out" title="Zoom out">−</button>
+      </div>
+
+      <div class="action-dock" id="actionDock">
+        <button class="btn" id="hintBtn" type="button">Reveal hint</button>
+        <button class="btn btn-primary" id="lockBtn" type="button" disabled>Lock in guess</button>
+        <button class="btn btn-primary btn-next" id="nextBtn" type="button" hidden>Next fact →</button>
+      </div>
+
+      <section class="score-dock" id="scoreDock" aria-label="Round result">
+        <div class="score-cell"><span class="score-label">Correct location</span><strong class="score-value" id="hudLocation">—</strong><span class="score-copy" id="hudContext"></span></div>
+        <div class="score-cell"><span class="score-label">Distance from target</span><strong class="score-value" id="hudDistance">—</strong><span class="score-rating" id="hudRating">Place a guess</span></div>
+        <div class="score-cell"><span class="score-label">Round score</span><strong class="score-value accent" id="hudScore">Up to 10,000</strong></div>
+      </section>
+
+      <section class="result" id="resultPanel" hidden>
+        <div class="result-top"><div><div class="result-kicker">The answer</div><div class="location-name" id="locationName"></div></div><div class="points" id="pointsEarned">0<small>points</small></div></div>
+        <div class="distance" id="distanceText"></div><p class="context" id="contextText"></p>
+      </section>
+
+      <button class="btn howto-btn" id="howToBtn" type="button">ⓘ How to play</button>
+    </section>
+  </main>
+
+  <div class="tutorial" id="tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+    <div class="tutorial-card">
+      <div class="tutorial-head"><h2 id="tutorialTitle">ⓘ How to play</h2><button class="tutorial-close" id="tutorialClose" type="button" aria-label="Close tutorial">×</button></div>
+      <p class="tutorial-sub">Find the correct location on the globe.</p>
+      <div class="tutorial-steps">
+        <div class="tutorial-step"><div class="tutorial-icon">⌖</div><div><strong>1. Place your guess</strong><span>Rotate and zoom the globe, then click the location where you think the event happened.</span></div></div>
+        <div class="tutorial-then">THEN</div>
+        <div class="tutorial-step"><div class="tutorial-icon">✓</div><div><strong>2. Lock in your guess</strong><span>Confirm your marker to reveal the answer, distance, and points earned.</span></div></div>
+      </div>
+      <div class="tutorial-tips">
+        <span><b>Zoom:</b> scroll, pinch, or use + / −</span>
+        <span><b>Imagery:</b> sharper live tiles load as you zoom</span>
+        <span><b>Score:</b> up to 10,000 points based on distance</span>
+      </div>
+      <div class="tutorial-footer"><button class="btn btn-primary" id="tutorialGotIt" type="button">Got it!</button></div>
+    </div>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="end-card">
+      <div class="end-icon">🏛️</div>
+      <h2 id="endTitle">History Hunter</h2>
+      <p id="endSubtitle">You followed the past across the planet.</p>
+      <div class="final-score" id="finalScore">0<small>total points</small></div>
+      <div class="end-stats">
+        <div><strong id="bestGuess">0 km</strong><span>Best guess</span></div>
+        <div><strong id="avgDistance">0 km</strong><span>Average miss</span></div>
+        <div><strong id="bestStreak">0</strong><span>Best streak</span></div>
+      </div>
+      <button class="btn btn-primary" id="playAgainBtn" type="button">Play again</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script src="globe.js"></script>
+  <script src="facts/facts-01.js"></script>
+  <script src="facts/facts-02.js"></script>
+  <script src="facts/facts-03.js"></script>
+  <script src="facts/facts-04.js"></script>
+  <script src="facts/facts-05.js"></script>
+  <script src="facts/facts-06.js"></script>
+  <script src="facts/facts-07.js"></script>
+  <script src="facts/facts-08.js"></script>
+  <script src="facts/facts-09.js"></script>
+  <script src="facts/facts-10.js"></script>
+  <script src="facts/facts-11.js"></script>
+  <script src="facts/facts-12.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
