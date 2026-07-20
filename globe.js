@@ -4,6 +4,14 @@
   const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
   const DEG = Math.PI / 180;
 
+  function resolveValue(value, fallback) {
+    try {
+      return typeof value === 'function' ? value() : (value ?? fallback);
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   function latLngVector(lat, lng) {
     const p = lat * DEG;
     const l = lng * DEG;
@@ -44,8 +52,8 @@
         type: 'Feature',
         id: index,
         properties: {
-          color: d.color || '#ffffff',
-          radius: Number(d.radius || 0.4)
+          color: String(resolveValue(d.color, '#ffffff')),
+          radius: Number(resolveValue(d.radius, 0.4))
         },
         geometry: { type: 'Point', coordinates: [Number(d.lng), Number(d.lat)] }
       }))
@@ -119,48 +127,29 @@
         style: {
           version: 8,
           sources: {
-            fallbackImagery: {
-              type: 'raster',
-              tiles: ['/assets/fallback/{z}/{x}/{y}.jpg'],
-              tileSize: 256,
-              minzoom: 0,
-              maxzoom: 4,
-              attribution: 'Fallback Earth imagery © NASA'
-            },
             imagery: {
               type: 'raster',
-              tiles: ['/tiles/{z}/{x}/{y}.jpg'],
+              tiles: [
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+              ],
               tileSize: 256,
-              minzoom: 4,
+              minzoom: 0,
               maxzoom: 19,
               attribution: 'Imagery © Esri and imagery contributors'
             }
           },
           layers: [
             {
-              id: 'fallback-satellite-imagery',
-              type: 'raster',
-              source: 'fallbackImagery',
-              minzoom: 0,
-              maxzoom: 24,
-              paint: {
-                'raster-fade-duration': 0,
-                'raster-resampling': 'linear',
-                'raster-saturation': 0.02,
-                'raster-contrast': 0.05
-              }
-            },
-            {
               id: 'satellite-imagery',
               type: 'raster',
               source: 'imagery',
-              minzoom: 4,
+              minzoom: 0,
               maxzoom: 24,
               paint: {
-                'raster-fade-duration': 180,
+                'raster-fade-duration': 140,
                 'raster-resampling': 'linear',
-                'raster-saturation': 0.04,
-                'raster-contrast': 0.08
+                'raster-saturation': 0.03,
+                'raster-contrast': 0.06
               }
             }
           ]
@@ -196,64 +185,32 @@
       });
 
       this.map.on('click', event => {
-        if (this.clickHandler) {
-          this.clickHandler({ lat: event.lngLat.lat, lng: event.lngLat.lng });
-        }
+        if (this.clickHandler) this.clickHandler({ lat: event.lngLat.lat, lng: event.lngLat.lng });
       });
 
       const stopRotation = () => { this._controls.autoRotate = false; };
       this.map.on('dragstart', stopRotation);
-      this.map.on('zoomstart', event => {
-        if (event.originalEvent) stopRotation();
-      });
+      this.map.on('zoomstart', event => { if (event.originalEvent) stopRotation(); });
       this.map.on('mousedown', stopRotation);
       this.map.on('touchstart', stopRotation);
 
-      let liveTileErrors = 0;
-      let imageryTimer = null;
-      let badgeHideTimer = null;
       const badge = document.querySelector('.imagery-badge');
-
-      const showImageryBadge = (text, mode, duration = 3200) => {
+      let badgeTimer = null;
+      const showBadge = text => {
         if (!badge) return;
-        clearTimeout(badgeHideTimer);
+        clearTimeout(badgeTimer);
         badge.textContent = text;
-        badge.dataset.mode = mode;
+        badge.dataset.mode = 'live';
         badge.classList.add('show');
-        if (duration) badgeHideTimer = setTimeout(() => badge.classList.remove('show'), duration);
+        badgeTimer = setTimeout(() => badge.classList.remove('show'), 2200);
       };
 
-      const updateImageryBadge = () => {
-        if (!badge) return;
-        if (this.map.getZoom() < 4) {
-          badge.dataset.mode = 'base';
-          badge.classList.remove('show');
-          return;
-        }
-        if (badge.dataset.mode === 'live') return;
-        showImageryBadge('Loading sharper imagery…', 'loading', 0);
-        clearTimeout(imageryTimer);
-        imageryTimer = setTimeout(() => {
-          if (badge.dataset.mode !== 'live') {
-            showImageryBadge('Using built-in imagery', 'fallback', 4200);
-          }
-        }, 7000);
-      };
-
-      this.map.on('zoomend', updateImageryBadge);
-      this.map.on('sourcedata', event => {
-        if (event.sourceId === 'imagery' && event.isSourceLoaded && badge && this.map.getZoom() >= 4) {
-          clearTimeout(imageryTimer);
-          showImageryBadge('Sharper imagery loaded', 'live', 2600);
-        }
+      this.map.on('zoomend', () => {
+        if (this.map.getZoom() >= 5) showBadge('High-resolution imagery');
       });
+
       this.map.on('error', event => {
         if (event && event.error) console.warn('ChronoGlobe map:', event.error.message || event.error);
-        liveTileErrors += 1;
-        if (liveTileErrors > 2 && badge && badge.dataset.mode !== 'live' && this.map.getZoom() >= 4) {
-          clearTimeout(imageryTimer);
-          showImageryBadge('Using built-in imagery', 'fallback', 4200);
-        }
       });
 
       requestAnimationFrame(time => this.frame(time));
@@ -393,7 +350,6 @@
         this._pendingCamera = { target, duration };
         return this;
       }
-
       const altitude = target.altitude ?? 1;
       const targetZoom = clamp(1.2 / altitude, 0.7, 19);
       const options = {
@@ -404,7 +360,6 @@
         duration: Math.max(0, duration),
         essential: true
       };
-
       if (duration) this.map.flyTo(options);
       else this.map.jumpTo(options);
       return this;
@@ -422,12 +377,10 @@
       if (this._destroyed) return;
       const dt = Math.min(50, now - this._lastFrame);
       this._lastFrame = now;
-
       if (this.map && this._loaded && this._controls.autoRotate && !this.map.isMoving() && this.map.getZoom() < 3.2) {
         const center = this.map.getCenter();
         this.map.setCenter([center.lng - this._controls.autoRotateSpeed * dt * 0.0038, center.lat]);
       }
-
       if (this.map && this._loaded && this.map.getLayer('history-rings-layer') && this._rings.length) {
         const phase = (now % 1000) / 1000;
         const base = 10 + phase * 22;
@@ -435,7 +388,6 @@
         this.map.setPaintProperty('history-rings-layer', 'circle-opacity', 1 - phase);
         this.map.setPaintProperty('history-rings-layer', 'circle-stroke-opacity', 1 - phase);
       }
-
       requestAnimationFrame(time => this.frame(time));
     }
   }
