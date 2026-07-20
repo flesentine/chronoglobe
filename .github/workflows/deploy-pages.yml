@@ -1,0 +1,55 @@
+name: Deploy ChronoGlobe
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare static site
+        run: |
+          mkdir -p _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude '_site' ./ _site/
+          touch _site/.nojekyll
+
+          # GitHub Pages cannot run the local Python imagery proxy. Use the
+          # public Esri raster endpoint in the hosted build, while keeping the
+          # local server/proxy unchanged for local development.
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('_site/globe.js')
+          text = path.read_text()
+          text = text.replace("'/assets/fallback/{z}/{x}/{y}.jpg'", "'./assets/fallback/{z}/{x}/{y}.jpg'")
+          text = text.replace("'/tiles/{z}/{x}/{y}.jpg'", "'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'")
+          path.write_text(text)
+          PY
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
