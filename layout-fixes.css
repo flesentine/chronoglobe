@@ -1,0 +1,64 @@
+/* Targeted layout corrections for tablets and narrow landscape screens. */
+
+@media (min-width: 701px) and (max-width: 1500px) {
+  .howto-btn {
+    width: 46px;
+    min-width: 46px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 0;
+    display: grid;
+    place-items: center;
+  }
+
+  .howto-btn::after {
+    content: 'ⓘ';
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .action-dock {
+    width: min(430px, calc(100% - 190px));
+  }
+}
+
+@media (min-width: 701px) and (max-height: 820px) {
+  .sidebar {
+    margin-bottom: 18px;
+  }
+
+  .action-dock {
+    bottom: 16px;
+  }
+
+  .howto-btn {
+    bottom: 16px;
+  }
+
+  .zoom-controls {
+    bottom: 16px;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 1100px) {
+  .action-dock {
+    left: 54%;
+    width: min(390px, calc(100% - 170px));
+  }
+}
+
+@media (orientation: landscape) and (min-width: 701px) and (max-height: 820px) {
+  .howto-btn {
+    left: 14px;
+  }
+
+  .action-dock {
+    gap: 8px;
+  }
+
+  .action-dock .btn {
+    min-width: 0;
+    padding-inline: 12px;
+  }
+}
