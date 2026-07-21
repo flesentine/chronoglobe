@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+  <radialGradient id="bg" cx="72%" cy="28%" r="82%"><stop offset="0" stop-color="#123a5b"/><stop offset=".45" stop-color="#071522"/><stop offset="1" stop-color="#020711"/></radialGradient>
+  <linearGradient id="logo" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#5de8ff"/><stop offset=".5" stop-color="#a894ff"/><stop offset="1" stop-color="#ffd166"/></linearGradient>
+  <radialGradient id="earth" cx="36%" cy="30%" r="70%"><stop stop-color="#45a8c9"/><stop offset=".42" stop-color="#1c6d91"/><stop offset=".68" stop-color="#174a56"/><stop offset="1" stop-color="#061722"/></radialGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="shadow"><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity=".5"/></filter>
+</defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<circle cx="915" cy="315" r="278" fill="url(#earth)" stroke="#62dfff" stroke-opacity=".8" stroke-width="3" filter="url(#shadow)"/>
+<path d="M717 210c70-61 132-75 187-40 32 21 40 58 83 73 49 18 94 9 145 45M720 290c60-18 103-4 146 22 49 29 113 28 177 66M768 399c45-35 92-43 141-27 44 15 90 42 146 43" fill="none" stroke="#d7b96d" stroke-opacity=".55" stroke-width="2"/>
+<path d="M790 136c-15 32-10 67 7 93 21 31 9 61-10 91-21 34-15 73 7 103M885 72c-18 36-12 76 9 108 23 36 15 75-8 110-21 33-17 69 6 103M987 84c-13 39-4 79 21 111 25 34 23 73 2 108-22 37-15 74 12 108" fill="none" stroke="#a9d7e6" stroke-opacity=".22" stroke-width="1.5"/>
+<path d="M786 270c81-58 170-23 244 56" fill="none" stroke="#5fe9ff" stroke-width="5" stroke-dasharray="12 10" filter="url(#glow)"/>
+<circle cx="786" cy="270" r="13" fill="#53e7ff" stroke="#fff" stroke-width="4"/>
+<circle cx="1030" cy="326" r="13" fill="#ffc85c" stroke="#fff" stroke-width="4"/>
+<rect x="46" y="42" width="78" height="78" rx="22" fill="url(#logo)"/>
+<circle cx="85" cy="81" r="17" fill="none" stroke="#04111b" stroke-width="5"/>
+<text x="146" y="92" font-family="Inter,Arial,sans-serif" font-size="48" font-weight="800" fill="#fff">ChronoGlobe</text>
+<text x="146" y="128" font-family="Inter,Arial,sans-serif" font-size="23" fill="#afc4d5">Guess where <tspan fill="#ffd166">history</tspan> happened.</text>
+<g transform="translate(46 160)">
+  <rect width="430" height="294" rx="28" fill="#081728" fill-opacity=".94" stroke="#31536c" stroke-width="2"/>
+  <rect x="26" y="26" width="112" height="38" rx="19" fill="#10384a" stroke="#2c7891"/><text x="82" y="51" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="800" fill="#67e8ff" letter-spacing="2">JUSTICE</text>
+  <rect x="154" y="26" width="142" height="38" rx="19" fill="#2d2b25" stroke="#75653b"/><text x="225" y="51" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="800" fill="#ffd166" letter-spacing="1">1945–1946</text>
+  <text x="28" y="112" font-family="Georgia,serif" font-size="31" fill="#f4f8ff"><tspan x="28" dy="0">International trials</tspan><tspan x="28" dy="42">prosecuted leading officials</tspan><tspan x="28" dy="42">for war crimes and crimes</tspan><tspan x="28" dy="42">against humanity.</tspan></text>
+</g>
+<g transform="translate(46 475)">
+  <rect width="390" height="105" rx="22" fill="#081728" stroke="#25485f" stroke-width="2"/>
+  <circle cx="60" cy="52" r="34" fill="#0a3146" stroke="#5fe9ff" stroke-width="5" filter="url(#glow)"/>
+  <text x="60" y="64" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" fill="#fff">★</text>
+  <text x="116" y="52" font-family="Inter,Arial,sans-serif" font-size="39" font-weight="800" fill="#59e8ff">6,836</text>
+  <text x="258" y="52" font-family="Inter,Arial,sans-serif" font-size="29" font-weight="700" fill="#7f91a4">/ 10,000</text>
+  <text x="116" y="80" font-family="Inter,Arial,sans-serif" font-size="15" font-weight="700" fill="#59e8ff" letter-spacing="2">ROUND SCORE</text>
+</g>
+<g transform="translate(914 500)">
+  <rect width="240" height="90" rx="22" fill="#081728" stroke="#25485f" stroke-width="2"/>
+  <text x="28" y="43" font-family="Inter,Arial,sans-serif" font-size="34" font-weight="800" fill="#fff">685 km</text>
+  <text x="28" y="70" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="800" fill="#59e8ff" letter-spacing="2">GREAT GUESS!</text>
+</g>
+</svg>
