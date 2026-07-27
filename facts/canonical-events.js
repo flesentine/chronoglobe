@@ -3,10 +3,12 @@
 
   const ACTIVE_EVENT_COUNT=150;
   const seeds=(window.CHRONO_SEEDS||[]).slice(0,ACTIVE_EVENT_COUNT);
+  const expertOverrides=window.CHRONO_EXPERT_OVERRIDES||{};
 
   function eventFromSeed(seed,index){
     const [category,era,baseFact,region,easyHint,mediumHint,hardHint,place,lat,lng]=seed;
     const eventId=`chrono-event-${String(index+1).padStart(3,'0')}`;
+    const reviewedExpert=expertOverrides[eventId];
     return Object.freeze({
       eventId,
       place,
@@ -15,27 +17,16 @@
       category,
       era,
       context:baseFact,
-      migration:Object.freeze({source:'legacy-seed',sourceIndex:index,status:'generated'}),
+      migration:Object.freeze({source:'legacy-seed',sourceIndex:index,status:reviewedExpert?'expert-reviewed':'generated'}),
       variants:Object.freeze({
-        easy:Object.freeze({
-          variantId:`${eventId}-easy`,
-          fact:region?`${baseFact} This happened somewhere in ${region}.`:baseFact,
-          hint:easyHint
-        }),
-        medium:Object.freeze({
-          variantId:`${eventId}-medium`,
-          fact:baseFact,
-          hint:mediumHint
-        }),
-        hard:Object.freeze({
-          variantId:`${eventId}-hard`,
-          fact:baseFact,
-          hint:hardHint
-        }),
+        easy:Object.freeze({variantId:`${eventId}-easy`,fact:region?`${baseFact} This happened somewhere in ${region}.`:baseFact,hint:easyHint}),
+        medium:Object.freeze({variantId:`${eventId}-medium`,fact:baseFact,hint:mediumHint}),
+        hard:Object.freeze({variantId:`${eventId}-hard`,fact:baseFact,hint:hardHint}),
         expert:Object.freeze({
           variantId:`${eventId}-expert`,
-          fact:baseFact,
-          hint:'No regional clue at this level. Identify the exact historical site from the event itself.'
+          fact:reviewedExpert?.fact||baseFact,
+          hint:reviewedExpert?.hint||'No regional clue at this level. Identify the exact historical site from the event itself.',
+          reviewed:Boolean(reviewedExpert)
         })
       })
     });
@@ -62,9 +53,7 @@
     });
   }
 
-  function expandAll(source=events){
-    return Object.freeze(source.flatMap(expandEvent));
-  }
+  function expandAll(source=events){return Object.freeze(source.flatMap(expandEvent))}
 
   window.CHRONO_CANONICAL_EVENTS=events;
   window.ChronoCanonical=Object.freeze({ACTIVE_EVENT_COUNT,eventFromSeed,expandEvent,expandAll});
