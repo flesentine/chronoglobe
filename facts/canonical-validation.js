@@ -2,23 +2,19 @@
   'use strict';
 
   const DIFFICULTIES=['easy','medium','hard','expert'];
-
   function issue(severity,code,message,eventId=null){return {severity,code,message,eventId}}
 
   function validate(events,legacyFacts=[]){
     const issues=[];
     if(!Array.isArray(events))return {ok:false,issues:[issue('error','EVENTS_NOT_ARRAY','Canonical events must be an array.')],summary:{}};
 
-    const eventIds=new Set();
-    const variantIds=new Set();
-    const placeCounts=new Map();
-    const coordinateCounts=new Map();
+    const eventIds=new Set(),variantIds=new Set(),placeCounts=new Map(),coordinateCounts=new Map();
+    let reviewedExperts=0;
 
     for(const event of events){
       if(!event?.eventId)issues.push(issue('error','MISSING_EVENT_ID','Event is missing eventId.'));
       else if(eventIds.has(event.eventId))issues.push(issue('error','DUPLICATE_EVENT_ID',`Duplicate eventId: ${event.eventId}`,event.eventId));
       else eventIds.add(event.eventId);
-
       if(!event?.place)issues.push(issue('error','MISSING_PLACE','Event is missing place.',event?.eventId));
       if(!Number.isFinite(event?.lat)||event.lat<-90||event.lat>90)issues.push(issue('error','INVALID_LATITUDE','Latitude is invalid.',event?.eventId));
       if(!Number.isFinite(event?.lng)||event.lng<-180||event.lng>180)issues.push(issue('error','INVALID_LONGITUDE','Longitude is invalid.',event?.eventId));
@@ -45,29 +41,28 @@
         }
       }
 
-      if(event?.variants?.expert?.fact===event?.variants?.hard?.fact){
-        issues.push(issue('warning','EXPERT_REUSES_HARD','Expert currently reuses the Hard clue.',event?.eventId));
-      }
-      if(event?.variants?.expert?.hint==='No regional clue at this level. Identify the exact historical site from the event itself.'){
-        issues.push(issue('warning','GENERIC_EXPERT_HINT','Expert uses the generic migration hint.',event?.eventId));
+      if(event?.variants?.expert?.reviewed)reviewedExperts++;
+      else{
+        if(event?.variants?.expert?.fact===event?.variants?.hard?.fact)issues.push(issue('warning','EXPERT_REUSES_HARD','Expert currently reuses the Hard clue.',event?.eventId));
+        if(event?.variants?.expert?.hint==='No regional clue at this level. Identify the exact historical site from the event itself.')issues.push(issue('warning','GENERIC_EXPERT_HINT','Expert uses the generic migration hint.',event?.eventId));
       }
     }
 
     for(const [place,count] of placeCounts)if(count>1)issues.push(issue('info','DUPLICATE_PLACE',`${count} events use place “${place}”.`));
     for(const [coordinates,count] of coordinateCounts)if(count>1)issues.push(issue('warning','DUPLICATE_COORDINATES',`${count} events use coordinates ${coordinates}.`));
 
-    let parityMismatches=0;
+    let parityMismatches=0,approvedEditorialDifferences=0;
     if(window.ChronoCanonical&&Array.isArray(legacyFacts)&&legacyFacts.length){
       const expanded=window.ChronoCanonical.expandAll(events);
       const fields=['eventId','variantId','difficulty','category','era','fact','hint','place','lat','lng','context'];
-      if(expanded.length!==legacyFacts.length){
-        issues.push(issue('error','PARITY_LENGTH',`Canonical expansion has ${expanded.length} records; legacy has ${legacyFacts.length}.`));
-        parityMismatches++;
-      }
+      if(expanded.length!==legacyFacts.length){issues.push(issue('error','PARITY_LENGTH',`Canonical expansion has ${expanded.length} records; legacy has ${legacyFacts.length}.`));parityMismatches++}
       const count=Math.min(expanded.length,legacyFacts.length);
       for(let index=0;index<count;index++){
+        const event=events[Math.floor(index/4)],difficulty=expanded[index].difficulty;
         for(const field of fields){
           if(expanded[index][field]!==legacyFacts[index][field]){
+            const approved=difficulty==='expert'&&event?.variants?.expert?.reviewed&&(field==='fact'||field==='hint');
+            if(approved){approvedEditorialDifferences++;continue}
             parityMismatches++;
             if(parityMismatches<=25)issues.push(issue('error','PARITY_MISMATCH',`Record ${index+1} field ${field} differs.`,expanded[index].eventId));
           }
@@ -77,7 +72,7 @@
     }
 
     const counts=issues.reduce((acc,item)=>{acc[item.severity]=(acc[item.severity]||0)+1;return acc},{error:0,warning:0,info:0});
-    const summary={events:events.length,variants:variantIds.size,errors:counts.error,warnings:counts.warning,info:counts.info,parityMismatches};
+    const summary={events:events.length,variants:variantIds.size,reviewedExperts,remainingExperts:Math.max(0,events.length-reviewedExperts),errors:counts.error,warnings:counts.warning,info:counts.info,parityMismatches,approvedEditorialDifferences};
     return {ok:counts.error===0,issues,summary};
   }
 
