@@ -1,6 +1,10 @@
 (()=>{
   'use strict';
 
+  if(!window.CHRONO_EXPERT_CONTENT&&document.readyState==='loading'){
+    document.write('<script src="facts/expert-content.js"><\/script>');
+  }
+
   const ACTIVE_EVENT_COUNT=150;
   const seeds=(window.CHRONO_SEEDS||[]).slice(0,ACTIVE_EVENT_COUNT);
   const expertContent=window.CHRONO_EXPERT_CONTENT||{};
