@@ -73,3 +73,17 @@ test('replayability diagnostic seeds Daily from the canonical content version', 
   expect(report.passed).toBe(report.total);
   expect(errors).toEqual([]);
 });
+
+test('release readiness has no hard blockers', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  const errors = await openDiagnostic(page, '/tools/release-readiness.html');
+  await expect(page.locator('#summary')).toContainText('READY');
+  const report = await page.evaluate(async () => {
+    for (let i = 0; i < 50 && !window.CHRONO_RELEASE_READINESS; i++) await new Promise(resolve => setTimeout(resolve, 50));
+    return window.CHRONO_RELEASE_READINESS;
+  });
+  expect(report.ready).toBe(true);
+  expect(report.blockers).toBe(0);
+  expect(report.checks.filter(check => check.severity === 'blocker').every(check => check.ok)).toBe(true);
+  expect(errors).toEqual([]);
+});
