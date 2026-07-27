@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChronoGlobe Facts Inventory</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07111f;--card:#0e1d31;--line:#243a55;--text:#edf7ff;--muted:#9eb3c8;--accent:#65e9ff;--warn:#ffd166;--bad:#ff7b88}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:1180px;margin:auto;padding:28px}h1{margin:0;font-size:clamp(28px,5vw,46px)}.sub{color:var(--muted);max-width:800px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:24px 0}.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.metric{font-size:30px;font-weight:800;color:var(--accent)}.label{color:var(--muted)}.panel{margin:14px 0;overflow:auto}h2{margin-top:0}table{width:100%;border-collapse:collapse;min-width:620px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted)}code{color:var(--accent)}.ok{color:var(--accent)}.warn{color:var(--warn)}.bad{color:var(--bad)}button{border:1px solid var(--line);background:#142942;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.note{padding:12px 14px;border-left:4px solid var(--warn);background:#15243a;border-radius:8px}.small{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>ChronoGlobe facts inventory</h1>
+    <p class="sub">Package A diagnostic report. This page inspects the live seed files and generated clue records without changing gameplay.</p>
+    <div class="actions"><button id="downloadBtn">Download JSON report</button><button id="copyBtn">Copy summary</button></div>
+    <div id="summary" class="grid"></div>
+    <section class="panel"><h2>Structural findings</h2><div id="findings"></div></section>
+    <section class="panel"><h2>Difficulty counts</h2><div id="difficulty"></div></section>
+    <section class="panel"><h2>Category distribution</h2><div id="categories"></div></section>
+    <section class="panel"><h2>Era distribution</h2><div id="eras"></div></section>
+    <section class="panel"><h2>Duplicate places</h2><div id="places"></div></section>
+    <section class="panel"><h2>Duplicate coordinates</h2><div id="coordinates"></div></section>
+    <section class="panel"><h2>Text statistics</h2><div id="textStats"></div></section>
+    <section class="panel"><h2>Expert construction audit</h2><div id="expert"></div></section>
+    <p class="small">Generated entirely in the browser from the repository’s current fact scripts.</p>
+  </main>
+
+  <script src="../facts/facts-core.js"></script>
+  <script src="../facts/seeds-1.js"></script>
+  <script src="../facts/seeds-2.js"></script>
+  <script src="../facts/seeds-3.js"></script>
+  <script src="../facts/seeds-4.js"></script>
+  <script src="../facts/facts-final.js"></script>
+  <script>
+  (()=>{
+    const seeds=window.CHRONO_SEEDS||[];
+    const facts=window.CHRONO_FACTS||[];
+    const levels=['easy','medium','hard','expert'];
+    const countBy=(items,keyFn)=>items.reduce((m,item)=>{const key=keyFn(item);m[key]=(m[key]||0)+1;return m},{});
+    const rows=(obj,headA='Value',headB='Count')=>{
+      const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0])));
+      if(!entries.length)return '<p class="small">None found.</p>';
+      return `<table><thead><tr><th>${headA}</th><th>${headB}</th></tr></thead><tbody>${entries.map(([k,v])=>`<tr><td>${escapeHtml(k)}</td><td>${v}</td></tr>`).join('')}</tbody></table>`;
+    };
+    const escapeHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const average=values=>values.length?values.reduce((a,b)=>a+b,0)/values.length:0;
+    const duplicates=obj=>Object.fromEntries(Object.entries(obj).filter(([,n])=>n>1));
+
+    const difficultyCounts=countBy(facts,f=>f.difficulty);
+    const categories=countBy(seeds,s=>s[0]||'(missing)');
+    const eras=countBy(seeds,s=>s[1]||'(missing)');
+    const placeCounts=countBy(seeds,s=>s[7]||'(missing)');
+    const coordinateCounts=countBy(seeds,s=>`${Number(s[8]).toFixed(5)}, ${Number(s[9]).toFixed(5)}`);
+    const activeSeeds=seeds.slice(0,150);
+    const unusedSeeds=Math.max(0,seeds.length-activeSeeds.length);
+    const exactFour=facts.length===activeSeeds.length*4;
+    const validCoords=activeSeeds.filter(s=>Number.isFinite(s[8])&&Number.isFinite(s[9])&&s[8]>=-90&&s[8]<=90&&s[9]>=-180&&s[9]<=180).length;
+    const expertFacts=facts.filter(f=>f.difficulty==='expert');
+    const expertSameAsHard=expertFacts.filter(ex=>facts.some(h=>h.difficulty==='hard'&&h.place===ex.place&&h.lat===ex.lat&&h.lng===ex.lng&&h.fact===ex.fact)).length;
+    const genericExpertHint=expertFacts.filter(f=>f.hint==='No regional clue at this level. Identify the exact historical site from the event itself.').length;
+    const clueLengths=facts.map(f=>f.fact.length);
+    const hintLengths=facts.map(f=>f.hint.length);
+
+    const report={
+      generatedAt:new Date().toISOString(),
+      seedCount:seeds.length,
+      activeSeedCount:activeSeeds.length,
+      unusedSeedCount:unusedSeeds,
+      runtimeFactCount:facts.length,
+      difficultyCounts,
+      exactFourVariantsPerActiveSeed:exactFour,
+      validCoordinateCount:validCoords,
+      duplicatePlaces:duplicates(placeCounts),
+      duplicateCoordinates:duplicates(coordinateCounts),
+      categoryCounts:categories,
+      eraCounts:eras,
+      text:{averageClueLength:Number(average(clueLengths).toFixed(1)),minimumClueLength:Math.min(...clueLengths),maximumClueLength:Math.max(...clueLengths),averageHintLength:Number(average(hintLengths).toFixed(1)),minimumHintLength:Math.min(...hintLengths),maximumHintLength:Math.max(...hintLengths)},
+      expert:{count:expertFacts.length,sameClueAsHard:expertSameAsHard,genericHintCount:genericExpertHint,categoryValues:[...new Set(expertFacts.map(f=>f.category))],eraValues:[...new Set(expertFacts.map(f=>f.era))]}
+    };
+
+    const metrics=[['All seeds',seeds.length],['Active seeds',activeSeeds.length],['Unused seeds',unusedSeeds],['Runtime clues',facts.length],['Valid coordinates',`${validCoords}/${activeSeeds.length}`],['Expert clues',expertFacts.length]];
+    document.getElementById('summary').innerHTML=metrics.map(([label,value])=>`<div class="card"><div class="metric">${value}</div><div class="label">${label}</div></div>`).join('');
+
+    const findings=[];
+    findings.push(`<p class="${activeSeeds.length===150?'ok':'bad'}"><strong>${activeSeeds.length===150?'PASS':'FAIL'}:</strong> The generator activates ${activeSeeds.length} seed records.</p>`);
+    findings.push(`<p class="${exactFour?'ok':'bad'}"><strong>${exactFour?'PASS':'FAIL'}:</strong> Runtime output equals four variants per active seed.</p>`);
+    findings.push(`<p class="${facts.length===600?'ok':'bad'}"><strong>${facts.length===600?'PASS':'FAIL'}:</strong> Runtime contains ${facts.length} clues.</p>`);
+    findings.push(`<p class="${levels.every(l=>difficultyCounts[l]===150)?'ok':'bad'}"><strong>${levels.every(l=>difficultyCounts[l]===150)?'PASS':'FAIL'}:</strong> Difficulty distribution is ${levels.map(l=>`${l} ${difficultyCounts[l]||0}`).join(', ')}.</p>`);
+    if(unusedSeeds)findings.push(`<p class="warn"><strong>IMPORTANT:</strong> ${unusedSeeds} seed records exist after the first 150 and are currently ignored by <code>facts-final.js</code>.</p>`);
+    findings.push(`<p class="warn"><strong>CONTENT MODEL:</strong> Expert currently reuses the Hard/Medium event clue for ${expertSameAsHard} of ${expertFacts.length} records and applies one generic hint to ${genericExpertHint} records.</p>`);
+    document.getElementById('findings').innerHTML=findings.join('');
+    document.getElementById('difficulty').innerHTML=rows(difficultyCounts,'Difficulty','Clues');
+    document.getElementById('categories').innerHTML=rows(categories,'Category','Seeds');
+    document.getElementById('eras').innerHTML=rows(eras,'Era','Seeds');
+    document.getElementById('places').innerHTML=rows(duplicates(placeCounts),'Place','Seed records');
+    document.getElementById('coordinates').innerHTML=rows(duplicates(coordinateCounts),'Latitude, longitude','Seed records');
+    document.getElementById('textStats').innerHTML=`<table><tbody><tr><th>Average clue length</th><td>${report.text.averageClueLength}</td></tr><tr><th>Shortest clue</th><td>${report.text.minimumClueLength}</td></tr><tr><th>Longest clue</th><td>${report.text.maximumClueLength}</td></tr><tr><th>Average hint length</th><td>${report.text.averageHintLength}</td></tr><tr><th>Shortest hint</th><td>${report.text.minimumHintLength}</td></tr><tr><th>Longest hint</th><td>${report.text.maximumHintLength}</td></tr></tbody></table>`;
+    document.getElementById('expert').innerHTML=`<div class="note"><strong>Current implementation:</strong> Expert hides category and era, reuses the base clue, and supplies a generic no-region hint. It is a fourth gameplay presentation of the same 150 events, not an independently authored Expert clue set.</div><table><tbody><tr><th>Expert records</th><td>${expertFacts.length}</td></tr><tr><th>Same clue as corresponding Hard record</th><td>${expertSameAsHard}</td></tr><tr><th>Generic Expert hints</th><td>${genericExpertHint}</td></tr><tr><th>Expert category values</th><td>${report.expert.categoryValues.map(escapeHtml).join(', ')}</td></tr><tr><th>Expert era values</th><td>${report.expert.eraValues.map(escapeHtml).join(', ')}</td></tr></tbody></table>`;
+
+    document.getElementById('downloadBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='chronoglobe-facts-inventory.json';a.click();URL.revokeObjectURL(a.href)});
+    document.getElementById('copyBtn').addEventListener('click',async()=>{const summary=`ChronoGlobe inventory: ${seeds.length} seeds; ${activeSeeds.length} active; ${facts.length} runtime clues; ${unusedSeeds} unused seeds; Expert reuses the Hard clue for ${expertSameAsHard}/${expertFacts.length} records.`;try{await navigator.clipboard.writeText(summary);document.getElementById('copyBtn').textContent='Copied'}catch{document.getElementById('copyBtn').textContent='Copy failed'}});
+    window.CHRONO_INVENTORY_REPORT=report;
+  })();
+  </script>
+</body>
+</html>
