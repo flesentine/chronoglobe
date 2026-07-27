@@ -1,0 +1,50 @@
+.imagery-badge.overlay-error{color:#ffd7dc;border-color:rgba(255,123,136,.42);background:rgba(54,14,24,.9)}
+
+@media(max-width:700px){
+  .start-card{max-height:calc(100svh - 18px);overflow:auto}
+  .start-actions{position:sticky;bottom:0;padding-top:10px;background:linear-gradient(to bottom,transparent,rgba(5,14,28,.98) 28%)}
+  .game-config{min-width:0}
+  .game-config-copy{min-width:0}
+  .game-config-value{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .action-dock:not(.with-score){padding-bottom:max(0px,env(safe-area-inset-bottom))}
+  .score-dock{max-height:calc(100% - 86px);overflow:auto;overscroll-behavior:contain}
+  .score-dock.show+.result{pointer-events:none}
+  .end-card{padding-bottom:max(18px,calc(18px + env(safe-area-inset-bottom)))}
+}
+
+@media(orientation:landscape) and (max-height:430px) and (max-width:950px){
+  .sidebar{width:auto;min-width:250px;max-width:300px}
+  .brand-row{min-height:32px}
+  .logo{width:31px;height:31px;border-radius:10px;font-size:15px}
+  .brand h1{font-size:15px}
+  .fact-card{padding:8px 10px}
+  .fact{max-height:72px;overflow:auto;font-size:14px;line-height:1.25}
+  .hint-box{max-height:46px;overflow:auto}
+  .game-config{gap:6px}
+  .game-config-label{display:none}
+  .menu-btn{min-height:34px}
+  .topbar{top:7px}
+  .score-dock{left:8px!important;right:8px!important;top:46px!important;bottom:8px!important;padding:8px 174px 8px 8px!important;grid-template-columns:1.15fr .8fr .8fr!important;max-height:none!important}
+  .score-cell{min-width:0;padding:4px 7px!important}
+  .score-value{font-size:15px!important}
+  .score-label{font-size:7px!important}
+  .score-rating,.score-copy{font-size:9px!important}
+  .action-dock.with-score{right:18px!important;bottom:18px!important;width:146px!important}
+  .action-dock.with-score #nextBtn{min-height:46px!important;font-size:13px!important}
+  .zoom-controls{display:none}
+}
+
+@media(orientation:landscape) and (max-height:380px) and (max-width:760px){
+  .sidebar{min-width:224px;max-width:250px;padding:7px!important;gap:5px!important}
+  .stats{display:none!important}
+  .progress-track{display:block!important}
+  .fact{max-height:60px;font-size:13px}
+  .score-dock{padding-right:150px!important;grid-template-columns:1fr 1fr!important}
+  .score-cell:first-of-type{grid-column:1/-1!important;border-right:0!important;border-bottom:1px solid var(--line)!important}
+  .action-dock.with-score{right:13px!important;width:128px!important}
+  .topbar{max-width:calc(100% - 40px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .start-actions{scroll-behavior:auto}
+}
