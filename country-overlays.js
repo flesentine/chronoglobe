@@ -8,10 +8,26 @@
   const FALLBACK_COUNTRY_DATA = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
   const REFERENCE_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
   let countryDataPromise = null;
+  let countryDataState = 'idle';
+  let countryDataSource = null;
+  let countryDataError = null;
+
+  const diagnostics = Object.freeze({
+    getStatus: () => Object.freeze({
+      state: countryDataState,
+      source: countryDataSource,
+      error: countryDataError ? String(countryDataError.message || countryDataError) : null,
+      localUrl: LOCAL_COUNTRY_DATA,
+      fallbackUrl: FALLBACK_COUNTRY_DATA
+    })
+  });
+  window.ChronoMapAids = diagnostics;
 
   async function fetchCountryData() {
     if (countryDataPromise) return countryDataPromise;
+    countryDataState = 'loading';
     countryDataPromise = (async () => {
+      let lastError = null;
       for (const url of [LOCAL_COUNTRY_DATA, FALLBACK_COUNTRY_DATA]) {
         try {
           const response = await fetch(url, { cache: 'force-cache' });
@@ -20,12 +36,19 @@
           if (data?.type !== 'FeatureCollection' || !Array.isArray(data.features) || data.features.length < 170) {
             throw new Error('Country boundary GeoJSON failed integrity checks');
           }
+          countryDataState = 'ready';
+          countryDataSource = url === LOCAL_COUNTRY_DATA ? 'local' : 'remote-fallback';
+          countryDataError = null;
           return data;
         } catch (error) {
+          lastError = error;
           console.warn(`ChronoGlobe could not load country boundaries from ${url}`, error);
         }
       }
-      throw new Error('No country boundary source was available');
+      countryDataState = 'unavailable';
+      countryDataSource = null;
+      countryDataError = lastError || new Error('No country boundary source was available');
+      throw countryDataError;
     })();
     return countryDataPromise;
   }
@@ -53,7 +76,7 @@
     };
 
     const installLayers = async () => {
-      if (!globe.map || installing) return;
+      if (!globe.map || installing || countryDataState === 'unavailable') return;
       installing = true;
       try {
         if (!globe.map.getSource('country-boundaries')) {
@@ -124,7 +147,7 @@
       if (globe._loaded) installLayers();
       else globe.map.on('load', installLayers);
       globe.map.on('styledata', () => {
-        if (globe._loaded && (!globe.map.getSource('country-boundaries') || !globe.map.getSource('country-reference'))) installLayers();
+        if (countryDataState !== 'unavailable' && globe._loaded && (!globe.map.getSource('country-boundaries') || !globe.map.getSource('country-reference'))) installLayers();
       });
     }
 
