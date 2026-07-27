@@ -76,7 +76,32 @@
     'chrono-event-072':{fact:'A Red Sea kingdom raised towering stone stelae, minted coins, and adopted Christianity in late antiquity.',hint:'The ancient capital lies in northern Ethiopia.'},
     'chrono-event-073':{fact:'Menelik II’s army defeated an invading Italian force, preserving Ethiopian independence during the partition of Africa.',hint:'The decisive battle occurred in northern Ethiopia in 1896.'},
     'chrono-event-074':{fact:'Fossils, stone tools, and long archaeological sequences from a rift-valley gorge transformed the study of human origins.',hint:'Louis and Mary Leakey are closely associated with the site.'},
-    'chrono-event-075':{fact:'A Portuguese expedition reached a major Swahili port while opening a sea route toward India.',hint:'Fort Jesus later guarded this harbor on the Kenyan coast.'}
+    'chrono-event-075':{fact:'A Portuguese expedition reached a major Swahili port while opening a sea route toward India.',hint:'Fort Jesus later guarded this harbor on the Kenyan coast.'},
+    'chrono-event-076':{fact:'Student protests against compulsory Afrikaans instruction became a defining uprising against apartheid after police opened fire.',hint:'Hector Pieterson became the best-known symbol of the township revolt near Johannesburg.'},
+    'chrono-event-077':{fact:'A future South African president spent eighteen of his twenty-seven prison years on an island penal colony.',hint:'The island lies in Table Bay, visible from Cape Town.'},
+    'chrono-event-078':{fact:'A Zulu force overwhelmed a technologically superior British column in one of the empire’s most dramatic battlefield defeats.',hint:'The fighting took place beneath a hill often compared to a sphinx.'},
+    'chrono-event-079':{fact:'After a nearby British defeat, a small garrison defended a mission station against repeated Zulu attacks.',hint:'The action followed the battle at Isandlwana on the same day.'},
+    'chrono-event-080':{fact:'Bombings, raids, and counterinsurgency in a Mediterranean capital became emblematic of an anti-colonial war.',hint:'The struggle was dramatized as the Battle of this North African city.'},
+    'chrono-event-081':{fact:'Roosevelt and Churchill met in a Moroccan port to coordinate Allied strategy and demand Axis unconditional surrender.',hint:'The 1943 conference shared its name with a famous wartime film.'},
+    'chrono-event-082':{fact:'A sanctuary containing a cubic shrine became the direction of Muslim prayer and the destination of the annual pilgrimage.',hint:'The Kaaba stands at the center of the Grand Mosque.'},
+    'chrono-event-083':{fact:'The Prophet’s migration to an oasis community established a new political and religious center and began the Islamic calendar.',hint:'This was the destination of the Hijra from Mecca.'},
+    'chrono-event-084':{fact:'An Abbasid capital on the Tigris became a center of translation, scholarship, commerce, and imperial administration.',hint:'The House of Wisdom is the strongest intellectual clue.'},
+    'chrono-event-085':{fact:'An ancient city became the seat of the Umayyad Caliphate and preserves one of Islam’s earliest monumental mosques.',hint:'The Umayyad Mosque stands in the Syrian capital.'},
+    'chrono-event-086':{fact:'A fortified commercial city prospered for centuries around a citadel and one of the world’s great covered markets.',hint:'The city lies in northern Syria and was a major overland trade hub.'},
+    'chrono-event-087':{fact:'A Mediterranean capital known for publishing and universities endured a prolonged civil war and repeated regional crises.',hint:'It was once widely called the Paris of the Middle East.'},
+    'chrono-event-088':{fact:'Alexander’s army built a stone causeway across the sea to capture a fortified Phoenician island city.',hint:'The siege permanently joined the former island to the Lebanese coast.'},
+    'chrono-event-089':{fact:'An early settlement near an oasis built substantial walls and a stone tower thousands of years before the pyramids.',hint:'The ancient tell lies below sea level near the Dead Sea.'},
+    'chrono-event-090':{fact:'An Elamite and Persian royal center yielded the stele carrying one of antiquity’s best-known law codes.',hint:'The Code of Hammurabi monument was discovered at this site in southwestern Iran.'},
+    'chrono-event-091':{fact:'A Silk Road oasis became celebrated for Islamic scholarship, monumental madrasas, and a towering minaret.',hint:'The Kalyan Minaret identifies the city in modern Uzbekistan.'},
+    'chrono-event-092':{fact:'A vast oasis metropolis linked Iran, Central Asia, and China before conquest shattered its urban life.',hint:'Its ruins lie near the modern city of Mary in Turkmenistan.'},
+    'chrono-event-093':{fact:'A mountain capital repeatedly changed hands through foreign invasion, civil war, and competing regimes from 1979 onward.',hint:'The city sits in a valley of the Hindu Kush.'},
+    'chrono-event-094':{fact:'Merchants, migrants, and invading armies crossed a narrow mountain corridor between the Afghan plateau and the Indus basin.',hint:'The pass connects the Kabul region with Peshawar.'},
+    'chrono-event-095':{fact:'Excavation of a Bronze Age mound helped give an entire Indus civilization its modern archaeological name.',hint:'The type-site lies in Punjab, Pakistan.'},
+    'chrono-event-096':{fact:'A crossroads city fused Hellenistic and Buddhist traditions and became an important center of learning and sculpture.',hint:'Greco-Buddhist art flourished here northwest of Islamabad.'},
+    'chrono-event-097':{fact:'A Mughal emperor commissioned a white marble mausoleum in memory of his wife, creating one of the world’s most recognizable buildings.',hint:'The monument stands beside the Yamuna River.'},
+    'chrono-event-098':{fact:'Akbar built an ambitious red-sandstone imperial capital that was occupied only briefly before the court moved away.',hint:'The planned city lies west of Agra.'},
+    'chrono-event-099':{fact:'Colonial troops fired into an enclosed gathering, killing hundreds and transforming Indian opposition to British rule.',hint:'The massacre site lies near the Golden Temple in Amritsar.'},
+    'chrono-event-100':{fact:'A nonviolent march ended at the Arabian Sea with a symbolic act rejecting a colonial tax and monopoly.',hint:'Gandhi concluded the Salt March at this Gujarat coastal village.'}
   };
 
   window.CHRONO_EXPERT_OVERRIDES=Object.freeze(overrides);
