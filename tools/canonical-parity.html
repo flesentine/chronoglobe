@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ChronoGlobe Canonical Migration</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07111f;--card:#0f1f34;--line:#28415d;--text:#edf7ff;--muted:#9db2c7;--good:#65e9ff;--warn:#ffd166;--bad:#ff7b88}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,sans-serif}.wrap{max-width:1200px;margin:auto;padding:28px}.lede{color:var(--muted);max-width:780px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0}.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.metric{font-size:30px;font-weight:800}.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}.panel{margin:14px 0;overflow:auto}table{border-collapse:collapse;width:100%;min-width:720px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted)}select{background:#142942;color:var(--text);border:1px solid var(--line);padding:8px;border-radius:8px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:800}.badge.error{background:rgba(255,123,136,.15);color:var(--bad)}.badge.warning{background:rgba(255,209,102,.15);color:var(--warn)}.badge.info{background:rgba(101,233,255,.12);color:var(--good)}
+  </style>
+</head>
+<body><main class="wrap">
+  <h1>Canonical migration parity</h1>
+  <p class="lede">This report compares the new 150-event canonical object model against the current 600-record runtime output. Production should not switch until structural validation and exact field parity both pass.</p>
+  <div id="summary" class="grid"></div>
+  <section class="panel"><h2>Release gate</h2><div id="gate"></div></section>
+  <section class="panel"><div class="toolbar"><h2 style="margin:0">Findings</h2><label>Severity <select id="severity"><option value="all">All</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Info</option></select></label></div><div id="issues"></div></section>
+  <section class="panel"><h2>Canonical samples</h2><div id="samples"></div></section>
+</main>
+<script src="../facts/facts-core.js"></script>
+<script src="../facts/seeds-1.js"></script><script src="../facts/seeds-2.js"></script><script src="../facts/seeds-3.js"></script><script src="../facts/seeds-4.js"></script>
+<script src="../facts/facts-final.js"></script>
+<script src="../facts/canonical-events.js"></script>
+<script src="../facts/canonical-validation.js"></script>
+<script>
+(()=>{
+ const events=window.CHRONO_CANONICAL_EVENTS||[],legacy=window.CHRONO_FACTS||[];
+ const report=window.ChronoCanonicalValidation.validate(events,legacy);
+ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const metrics=[['Canonical events',report.summary.events],['Canonical variants',report.summary.variants],['Parity mismatches',report.summary.parityMismatches],['Errors',report.summary.errors],['Warnings',report.summary.warnings],['Info',report.summary.info]];
+ document.getElementById('summary').innerHTML=metrics.map(([label,value])=>`<div class="card"><div class="metric ${label==='Errors'||label==='Parity mismatches'?(value?'bad':'good'):label==='Warnings'?'warn':'good'}">${value}</div><div>${label}</div></div>`).join('');
+ document.getElementById('gate').innerHTML=report.ok&&report.summary.parityMismatches===0?'<p class="good"><strong>PASS:</strong> Canonical structure is valid and expands to the exact current runtime dataset.</p><p>Next gate: editorial review of Expert clues and duplicate coordinates before production activation.</p>':'<p class="bad"><strong>BLOCKED:</strong> Production must remain on the legacy generator until all errors and parity mismatches are resolved.</p>';
+ const select=document.getElementById('severity');
+ function drawIssues(){const filtered=report.issues.filter(item=>select.value==='all'||item.severity===select.value);document.getElementById('issues').innerHTML=filtered.length?`<table><thead><tr><th>Severity</th><th>Code</th><th>Event</th><th>Finding</th></tr></thead><tbody>${filtered.map(item=>`<tr><td><span class="badge ${item.severity}">${esc(item.severity)}</span></td><td>${esc(item.code)}</td><td>${esc(item.eventId||'—')}</td><td>${esc(item.message)}</td></tr>`).join('')}</tbody></table>`:'<p>No findings at this severity.</p>'}
+ select.addEventListener('change',drawIssues);drawIssues();
+ const sampleEvents=[events[0],events[Math.floor(events.length/2)],events.at(-1)].filter(Boolean);
+ document.getElementById('samples').innerHTML=`<table><thead><tr><th>ID</th><th>Place</th><th>Category / era</th><th>Easy clue</th><th>Expert clue</th></tr></thead><tbody>${sampleEvents.map(event=>`<tr><td>${esc(event.eventId)}</td><td>${esc(event.place)}<br><small>${event.lat}, ${event.lng}</small></td><td>${esc(event.category)}<br>${esc(event.era)}</td><td>${esc(event.variants.easy.fact)}</td><td>${esc(event.variants.expert.fact)}</td></tr>`).join('')}</tbody></table>`;
+ window.CHRONO_CANONICAL_REPORT=report;
+})();
+</script></body></html>
