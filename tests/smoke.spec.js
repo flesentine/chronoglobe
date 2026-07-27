@@ -42,6 +42,7 @@ test('loads the complete canonical dataset exactly once', async ({ page }) => {
     events: window.CHRONO_CANONICAL_EVENTS?.length,
     reviewedExperts: window.CHRONO_CANONICAL_EVENTS?.filter(event => event.variants.expert.reviewed).length,
     expertContent: Object.keys(window.CHRONO_EXPERT_CONTENT || {}).length,
+    contentVersion: window.ChronoPersistence?.CONTENT_VERSION,
     replayScripts: [...document.scripts].filter(script => script.src.endsWith('/replayability.js')).length,
     legacyExpertScripts: [...document.scripts].filter(script => script.src.endsWith('/expert-overrides.js')).length
   }));
@@ -52,6 +53,7 @@ test('loads the complete canonical dataset exactly once', async ({ page }) => {
     events: 150,
     reviewedExperts: 150,
     expertContent: 150,
+    contentVersion: 'canonical-150-expert-v1',
     replayScripts: 1,
     legacyExpertScripts: 0
   });
@@ -87,13 +89,32 @@ test('unfinished game can be resumed after reload', async ({ page }) => {
   await openClean(page);
   await startStandardGame(page);
   await placeGuess(page, 33, -117);
-  await page.reload();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('chronoglobeActiveGame')));
+  expect(saved.contentVersion).toBe('canonical-150-expert-v1');
+  expect(saved.appVersion).toBe('1.9.0');
 
+  await page.reload();
   await expect(page.locator('#resumeGameDialog')).toHaveClass(/show/);
   await expect(page.locator('#resumeGameSummary')).toContainText('round 1 of 5');
   await page.locator('#resumeSavedBtn').click();
   await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
   await expect(page.locator('#lockBtn')).toBeEnabled();
+});
+
+test('legacy content saves are rejected and cleared', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await startStandardGame(page);
+  await placeGuess(page, 12, 34);
+  await page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('chronoglobeActiveGame'));
+    saved.contentVersion = 'legacy-150-v1';
+    localStorage.setItem('chronoglobeActiveGame', JSON.stringify(saved));
+  });
+  await page.reload();
+  await expect(page.locator('#resumeGameDialog')).not.toHaveClass(/show/);
+  await expect(page.locator('#startScreen')).toHaveClass(/show/);
+  expect(await page.evaluate(() => localStorage.getItem('chronoglobeActiveGame'))).toBeNull();
 });
 
 test('Daily Challenge starts as a five-round mixed game', async ({ page }) => {
