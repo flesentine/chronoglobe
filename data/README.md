@@ -9,7 +9,7 @@ Source:
 - Scale: 1:110m
 - Upstream repository: `nvkelso/natural-earth-vector`
 
-Natural Earth data is in the public domain. The file is stored locally so ChronoGlobe's Easy and Medium country-border aids do not depend on an unrelated runtime host.
+Natural Earth data is in the public domain. The intended production state is to store the file locally so ChronoGlobe's Easy and Medium country-border aids do not depend on an unrelated runtime host.
 
 The workflow validates that the downloaded file:
 
@@ -18,4 +18,6 @@ The workflow validates that the downloaded file:
 - contains at least 170 features
 - is larger than 100 KB
 
-The application loads the local file first. The upstream URL remains only as a temporary resilience fallback if the local asset cannot be served.
+The application loads the local file first and then tries the upstream Natural Earth URL. When neither source is available, it disables map aids, displays a non-blocking warning, and keeps the game playable.
+
+As of the current repository state, the generated GeoJSON file is not committed. Run **Actions → Vendor country boundaries → Run workflow** to create and commit it.
