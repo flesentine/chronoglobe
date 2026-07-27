@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="mobile-landscape-fixes.css" />
   <link rel="stylesheet" href="package-c.css" />
   <link rel="stylesheet" href="package-d.css" />
+  <link rel="stylesheet" href="package-e.css" />
 </head>
 <body>
   <main class="app" id="gameApp" aria-hidden="true">
@@ -57,8 +58,9 @@
       <div class="imagery-badge" data-mode="base" role="status" aria-live="polite"></div>
       <div class="zoom-controls" aria-label="Globe zoom controls"><button id="zoomInBtn" type="button" aria-label="Zoom in" title="Zoom in">+</button><button id="zoomOutBtn" type="button" aria-label="Zoom out" title="Zoom out">−</button></div>
       <div class="action-dock" id="actionDock"><button class="btn" id="hintBtn" type="button">Use hint — max 8,000</button><button class="btn btn-primary" id="lockBtn" type="button" disabled>Lock in guess</button><button class="btn btn-primary btn-next" id="nextBtn" type="button" hidden>Next fact →</button></div>
-      <section class="score-dock" id="scoreDock" aria-label="Round result">
-        <div class="score-cell"><span class="score-label">Correct location</span><strong class="score-value" id="hudLocation">—</strong><span class="score-copy" id="hudContext"></span></div>
+      <section class="score-dock" id="scoreDock" aria-labelledby="resultHeading">
+        <h2 class="result-heading" id="resultHeading" tabindex="-1">Round result</h2>
+        <div class="score-cell"><span class="score-label">Correct location</span><strong class="score-value" id="hudLocation">—</strong><span class="score-copy result-context" id="hudContext"></span><button class="result-context-toggle" id="contextToggle" type="button" aria-expanded="false" aria-controls="hudContext">Why this place?</button><div class="marker-legend" aria-label="Map marker legend"><span class="marker-key"><span class="marker-dot guess"></span>Your guess</span><span class="marker-key"><span class="marker-dot answer"></span>Correct answer</span></div></div>
         <div class="score-cell"><span class="score-label">Distance from target</span><strong class="score-value" id="hudDistance">—</strong><span class="score-rating" id="hudRating">Place a guess</span></div>
         <div class="score-cell"><span class="score-label">Round score</span><strong class="score-value accent" id="hudScore">Up to 10,000</strong><span class="score-copy" id="hudScoreDetail"></span></div>
       </section>
@@ -66,6 +68,8 @@
       <button class="btn howto-btn" id="howToBtn" type="button">ⓘ How to play</button>
     </section>
   </main>
+
+  <div class="visually-hidden" id="gameAnnouncement" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <section class="start-screen show" id="startScreen" aria-labelledby="startTitle">
     <div class="start-card">
