@@ -4,7 +4,7 @@
   const DAILY_PREFIX='chronoglobeDailyCompleteV1:';
   const ACTIVE_SAVE_KEY='chronoglobeActiveGame';
   const DAILY_ALGORITHM_VERSION=1;
-  const CONTENT_VERSION='legacy-150-v1';
+  const CONTENT_VERSION=window.ChronoPersistence?.CONTENT_VERSION||'canonical-150-expert-v1';
   const SITE_URL='https://flesentine.github.io/chronoglobe/';
 
   const safeGet=key=>{try{return localStorage.getItem(key)}catch{return null}};
