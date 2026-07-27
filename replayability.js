@@ -13,13 +13,13 @@
   const parseJson=(text,fallback)=>{try{return text?JSON.parse(text):fallback}catch{return fallback}};
   const utcDate=()=>new Date().toISOString().slice(0,10);
   const dailySeed=date=>`chronoglobe-daily-v${DAILY_ALGORITHM_VERSION}-${date}-${CONTENT_VERSION}`;
-  const titleCase=value=>String(value||'').replace(/^./,c=>c.toUpperCase());
 
   let originalBuild=null;
   let pendingMode=null;
   let session=null;
   let currentDeck=[];
   let latestSavedGame=null;
+  let finalPayload=null;
   let resultGlyphs=[];
   let endHandled=false;
 
@@ -50,11 +50,8 @@
     const patched=(options={})=>{
       const mode=pendingMode;
       let deck;
-      if(mode?.type==='daily'){
-        deck=originalBuild({...options,difficulty:'mixed',roundCount:5,seed:dailySeed(mode.date)});
-      }else{
-        deck=buildWithAvoidance(options);
-      }
+      if(mode?.type==='daily')deck=originalBuild({...options,difficulty:'mixed',roundCount:5,seed:dailySeed(mode.date)});
+      else deck=buildWithAvoidance(options);
       currentDeck=deck.map(item=>({eventId:item.eventId,variantId:item.variantId,difficulty:item.difficulty}));
       if(mode?.type==='daily'){
         session={type:'daily',date:mode.date,official:mode.official,deck:currentDeck};
@@ -91,7 +88,9 @@
     if(difficulty)difficulty.checked=true;
     if(rounds)rounds.checked=true;
     pendingMode={type:'daily',date,official:!dailyCompleted(date)};
-    resultGlyphs=[];endHandled=false;
+    resultGlyphs=[];
+    finalPayload=null;
+    endHandled=false;
     window.startGame();
     setTimeout(updateDailyLabels,0);
   }
@@ -110,15 +109,6 @@
     return null;
   }
 
-  function inferSessionFromSave(){
-    const saved=readActiveSave();
-    const stored=parseJson(safeGet(SESSION_KEY),null);
-    if(stored?.deck&&saved?.deck&&sameDeck(stored.deck,saved.deck)){
-      session=stored;currentDeck=stored.deck;resultGlyphs=glyphsFromResults(saved.roundResults||[]);return;
-    }
-    if(saved?.deck){session={type:'standard',deck:saved.deck};currentDeck=saved.deck;resultGlyphs=glyphsFromResults(saved.roundResults||[])}
-  }
-
   function sameDeck(a,b){return Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((item,i)=>item.eventId===b[i]?.eventId&&item.variantId===b[i]?.variantId)}
 
   function glyphForResult(result){
@@ -129,7 +119,37 @@
 
   function glyphsFromResults(results){return Array.isArray(results)?results.map(glyphForResult):[]}
 
+  function inferSessionFromSave(){
+    const saved=readActiveSave();
+    const stored=parseJson(safeGet(SESSION_KEY),null);
+    if(stored?.deck&&saved?.deck&&sameDeck(stored.deck,saved.deck)){
+      session=stored;currentDeck=stored.deck;resultGlyphs=glyphsFromResults(saved.roundResults||[]);return;
+    }
+    if(saved?.deck){session={type:'standard',deck:saved.deck};currentDeck=saved.deck;resultGlyphs=glyphsFromResults(saved.roundResults||[])}
+  }
+
+  function captureFinalPayload(event){
+    const button=event.target?.closest?.('#nextBtn');
+    if(!button||button.hidden||!button.textContent.includes('final score'))return;
+    const saved=readActiveSave();
+    if(!saved)return;
+    currentDeck=Array.isArray(saved.deck)?saved.deck:currentDeck;
+    resultGlyphs=glyphsFromResults(saved.roundResults||[]);
+    finalPayload=Object.freeze({
+      score:Number(saved.score)||0,
+      originalMaximum:Number(saved.originalMaximum)||currentDeck.length*10000,
+      adjustedMaximum:Number(saved.adjustedMaximum)||currentDeck.length*10000,
+      hintsUsed:Number(saved.hintsUsed)||0,
+      bestStreak:Number(saved.bestStreak)||0,
+      deck:currentDeck.map(item=>({...item})),
+      roundResults:(saved.roundResults||[]).map(result=>({...result})),
+      session:session?{...session}:null
+    });
+    window.dispatchEvent(new CustomEvent('chronoglobe:finished',{detail:finalPayload}));
+  }
+
   function watchResults(){
+    document.addEventListener('click',captureFinalPayload,true);
     const scoreDock=document.getElementById('scoreDock');
     const endScreen=document.getElementById('endScreen');
     if(scoreDock)new MutationObserver(()=>{
@@ -146,27 +166,34 @@
   }
 
   function handleCompletion(){
-    if(currentDeck.length)rememberEvents(currentDeck.map(item=>item.eventId));
-    if(session?.type==='daily'&&session.official)safeSet(`${DAILY_PREFIX}${session.date}`,'1');
+    const deck=finalPayload?.deck||currentDeck;
+    if(deck.length)rememberEvents(deck.map(item=>item.eventId));
+    const completedSession=finalPayload?.session||session;
+    if(completedSession?.type==='daily'&&completedSession.official)safeSet(`${DAILY_PREFIX}${completedSession.date}`,'1');
     addShareButton();
     safeRemove(SESSION_KEY);
   }
 
   function shareText(){
-    const score=document.getElementById('finalScore')?.textContent.trim().replace(/total points/i,'').trim()||'0';
-    const maximum=document.getElementById('finalMaximum')?.textContent.trim().replace(/^out of\s*/i,'')||'50,000';
-    const hints=(latestSavedGame?.hintsUsed??0);
-    const heading=session?.type==='daily'?`ChronoGlobe Daily ${session.date}${session.official?'':' (Practice)'}`:'ChronoGlobe';
-    const rows=resultGlyphs.length?resultGlyphs.join(' '):'🌍';
+    const domScore=document.getElementById('finalScore')?.textContent.trim().replace(/total points/i,'').trim()||'0';
+    const domMaximum=document.getElementById('finalMaximum')?.textContent.trim().replace(/^out of\s*/i,'')||'50,000';
+    const score=finalPayload?finalPayload.score.toLocaleString():domScore;
+    const maximum=finalPayload?finalPayload.originalMaximum.toLocaleString():domMaximum;
+    const hints=finalPayload?.hintsUsed??latestSavedGame?.hintsUsed??0;
+    const completedSession=finalPayload?.session||session;
+    const heading=completedSession?.type==='daily'?`ChronoGlobe Daily ${completedSession.date}${completedSession.official?'':' (Practice)'}`:'ChronoGlobe';
+    const glyphs=finalPayload?glyphsFromResults(finalPayload.roundResults):resultGlyphs;
+    const rows=glyphs.length?glyphs.join(' '):'🌍';
     return `${heading}\n${score} / ${maximum}\n${rows}\n${hints} hint${hints===1?'':'s'} used\n${SITE_URL}`;
   }
 
   async function shareResults(){
     const text=shareText();
     try{
-      if(navigator.share){await navigator.share({title:'ChronoGlobe result',text,url:SITE_URL});return}
+      if(navigator.share){await navigator.share({title:'ChronoGlobe result',text});return}
       await navigator.clipboard.writeText(text);
-      const button=document.getElementById('shareResultsBtn');if(button){button.textContent='Copied result';setTimeout(()=>button.textContent='Share result',1600)}
+      const button=document.getElementById('shareResultsBtn');
+      if(button){button.textContent='Copied result';setTimeout(()=>button.textContent='Share result',1600)}
     }catch(error){if(error?.name!=='AbortError')console.warn('Unable to share ChronoGlobe result',error)}
   }
 
@@ -175,11 +202,14 @@
     const playAgain=document.getElementById('playAgainBtn');
     if(!card||!playAgain)return;
     let button=document.getElementById('shareResultsBtn');
-    if(!button){button=document.createElement('button');button.id='shareResultsBtn';button.type='button';button.className='btn share-results-btn';button.textContent='Share result';button.addEventListener('click',shareResults);playAgain.before(button)}
+    if(!button){
+      button=document.createElement('button');button.id='shareResultsBtn';button.type='button';button.className='btn share-results-btn';button.textContent='Share result';button.addEventListener('click',shareResults);playAgain.before(button);
+    }
     button.hidden=false;
-    if(session?.type==='daily'){
+    const completedSession=finalPayload?.session||session;
+    if(completedSession?.type==='daily'){
       const subtitle=document.getElementById('endSubtitle');
-      if(subtitle)subtitle.textContent=`Daily Challenge · ${session.official?'Official attempt':'Practice round'}`;
+      if(subtitle)subtitle.textContent=`Daily Challenge · ${completedSession.official?'Official attempt':'Practice round'}`;
     }
   }
 
