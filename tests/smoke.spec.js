@@ -19,6 +19,21 @@ async function placeGuess(page, lat = 0, lng = 0) {
   await expect(page.locator('#lockBtn')).toBeEnabled();
 }
 
+async function finishFiveRoundGame(page) {
+  for (let round = 1; round <= 5; round++) {
+    await placeGuess(page, round, round);
+    await page.locator('#lockBtn').click();
+    await expect(page.locator('#scoreDock')).toHaveClass(/show/);
+    await page.locator('#nextBtn').click();
+    if (round < 5) await expect(page.locator('#roundStat')).toContainText(`${round + 1} / 5`);
+  }
+  await expect(page.locator('#endScreen')).toHaveClass(/show/);
+}
+
+function desktopOnly(testInfo) {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'Replayability regression runs once on desktop Chromium');
+}
+
 test('loads the complete canonical dataset exactly once', async ({ page }) => {
   await openClean(page);
   const runtime = await page.evaluate(() => ({
@@ -90,6 +105,55 @@ test('Daily Challenge starts as a five-round mixed game', async ({ page }) => {
   await expect(page.locator('#roundStat')).toContainText('1 / 5');
 });
 
+test('Daily Challenge deck is deterministic for the UTC date', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await page.locator('#dailyChallengeBtn').click();
+  const first = await page.evaluate(() => JSON.parse(localStorage.getItem('chronoglobeReplaySessionV1')).deck);
+
+  await page.evaluate(() => {
+    localStorage.removeItem('chronoglobeActiveGame');
+    localStorage.removeItem('chronoglobeReplaySessionV1');
+  });
+  await page.reload();
+  await expect(page.locator('#startScreen')).toHaveClass(/show/);
+  await page.locator('#dailyChallengeBtn').click();
+  const second = await page.evaluate(() => JSON.parse(localStorage.getItem('chronoglobeReplaySessionV1')).deck);
+
+  expect(second).toEqual(first);
+  expect(new Set(first.map(item => item.eventId)).size).toBe(5);
+  expect(first[0].difficulty).not.toBe('expert');
+});
+
+test('completed Daily Challenge becomes Practice on the next attempt', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await page.locator('#dailyChallengeBtn').click();
+  await expect(page.locator('#gameConfigText')).toContainText('Official');
+  await finishFiveRoundGame(page);
+  await expect(page.locator('#endSubtitle')).toContainText('Official attempt');
+
+  const completion = await page.evaluate(() => {
+    const date = new Date().toISOString().slice(0, 10);
+    return localStorage.getItem(`chronoglobeDailyCompleteV1:${date}`);
+  });
+  expect(completion).toBe('1');
+
+  await page.locator('#playAgainBtn').click();
+  await page.locator('#dailyChallengeBtn').click();
+  await expect(page.locator('#gameConfigText')).toContainText('Practice');
+});
+
+test('standard rounds avoid the 30 most recently completed events', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  const recent = Array.from({ length: 30 }, (_, index) => `chrono-event-${String(index + 1).padStart(3, '0')}`);
+  await page.evaluate(ids => localStorage.setItem('chronoglobeRecentEventsV1', JSON.stringify(ids)), recent);
+  await startStandardGame(page);
+  const deckIds = await page.evaluate(() => JSON.parse(localStorage.getItem('chronoglobeActiveGame')).deck.map(item => item.eventId));
+  expect(deckIds.some(id => recent.includes(id))).toBe(false);
+});
+
 test('menu pauses and resumes the current game', async ({ page }) => {
   await openClean(page);
   await startStandardGame(page);
@@ -100,7 +164,8 @@ test('menu pauses and resumes the current game', async ({ page }) => {
   await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
 });
 
-test('final results are captured before persistence is cleared', async ({ page }) => {
+test('final results are captured before persistence is cleared', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
   await openClean(page);
   await startStandardGame(page);
   await page.evaluate(() => {
@@ -108,15 +173,7 @@ test('final results are captured before persistence is cleared', async ({ page }
     window.addEventListener('chronoglobe:finished', event => { window.__finishedPayload = event.detail; }, { once: true });
   });
 
-  for (let round = 1; round <= 5; round++) {
-    await placeGuess(page, round, round);
-    await page.locator('#lockBtn').click();
-    await expect(page.locator('#scoreDock')).toHaveClass(/show/);
-    await page.locator('#nextBtn').click();
-    if (round < 5) await expect(page.locator('#roundStat')).toContainText(`${round + 1} / 5`);
-  }
-
-  await expect(page.locator('#endScreen')).toHaveClass(/show/);
+  await finishFiveRoundGame(page);
   await expect(page.locator('#shareResultsBtn')).toBeVisible();
   const captured = await page.evaluate(() => ({
     payload: window.__finishedPayload,
