@@ -22,38 +22,36 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="layout-fixes.css" />
   <link rel="stylesheet" href="mobile-landscape-fixes.css" />
+  <link rel="stylesheet" href="package-c.css" />
 </head>
 <body>
-  <main class="app">
+  <main class="app" id="gameApp" aria-hidden="true">
     <aside class="sidebar">
       <div class="brand-row">
-        <div class="brand">
-          <div class="logo">◉</div>
-          <div><h1>ChronoGlobe</h1><p>History is somewhere.</p></div>
-        </div>
-        <button class="icon-btn" id="soundBtn" type="button" aria-label="Toggle sound" title="Toggle sound">🔊</button>
+        <div class="brand"><div class="logo">◉</div><div><h1>ChronoGlobe</h1><p>History is somewhere.</p></div></div>
+        <button class="icon-btn" id="soundBtn" type="button" aria-label="Sound on" title="Sound on">🔊</button>
       </div>
       <div class="stats">
-        <div class="stat"><span>Round</span><strong id="roundStat">1 / 10</strong></div>
+        <div class="stat"><span>Round</span><strong id="roundStat">1 / 5</strong></div>
         <div class="stat"><span>Score</span><strong id="scoreStat">0</strong></div>
         <div class="stat"><span>Streak</span><strong id="streakStat">0</strong></div>
       </div>
       <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
       <section class="card fact-card">
-        <div class="eyebrow"><span class="pill" id="categoryPill">Ancient</span><span class="pill era" id="eraPill">79 CE</span></div>
-        <p class="fact" id="factText">A Roman city was buried by the eruption of Mount Vesuvius, preserving streets, villas, and everyday life under volcanic debris.</p>
+        <div class="eyebrow"><span class="expert-badge">Expert</span><span class="pill" id="categoryPill">Ancient</span><span class="pill era" id="eraPill">79 CE</span></div>
+        <p class="fact" id="factText">Choose a game to begin.</p>
         <p class="round-helper">Study the clue, explore the globe, and place your marker as precisely as possible.</p>
         <div class="hint-box" id="hintBox"></div>
       </section>
-      <div class="settings">
-        <div class="select-wrap"><label for="difficulty">Difficulty</label><select id="difficulty"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option><option value="expert">Expert</option><option value="mixed">Mixed</option></select></div>
-        <div class="select-wrap"><label for="roundCount">Game length</label><select id="roundCount"><option value="5">5 rounds</option><option value="10" selected>10 rounds</option><option value="15">15 rounds</option></select></div>
+      <div class="game-config">
+        <div class="game-config-copy"><span class="game-config-label">Current game</span><strong class="game-config-value" id="gameConfigText">Easy · 5 rounds</strong></div>
+        <button class="menu-btn" id="menuBtn" type="button" aria-haspopup="dialog">Menu</button>
       </div>
     </aside>
     <section class="globe-stage" id="globeStage" aria-label="Interactive globe">
       <div id="globe"></div>
       <div class="topbar"><span class="live"></span><span id="statusText">Choose a location</span></div>
-      <div class="guess-toast" id="guessToast">Guess marker placed — lock it in when ready</div>
+      <div class="guess-toast" id="guessToast">Guess placed — tap elsewhere to move it</div>
       <div class="imagery-badge" data-mode="base" role="status" aria-live="polite"></div>
       <div class="zoom-controls" aria-label="Globe zoom controls"><button id="zoomInBtn" type="button" aria-label="Zoom in" title="Zoom in">+</button><button id="zoomOutBtn" type="button" aria-label="Zoom out" title="Zoom out">−</button></div>
       <div class="action-dock" id="actionDock"><button class="btn" id="hintBtn" type="button">Reveal hint</button><button class="btn btn-primary" id="lockBtn" type="button" disabled>Lock in guess</button><button class="btn btn-primary btn-next" id="nextBtn" type="button" hidden>Next fact →</button></div>
@@ -66,15 +64,50 @@
       <button class="btn howto-btn" id="howToBtn" type="button">ⓘ How to play</button>
     </section>
   </main>
+
+  <section class="start-screen show" id="startScreen" aria-labelledby="startTitle">
+    <div class="start-card">
+      <div class="start-brand"><div class="logo">◉</div><div><h2 id="startTitle">ChronoGlobe</h2><p class="start-sub">Guess where history happened.</p></div></div>
+      <div class="setup-group"><span class="setup-label">Difficulty</span><div class="choice-grid" id="difficultyChoices">
+        <label class="choice"><input type="radio" name="difficultyChoice" value="easy" checked><span>Easy</span></label>
+        <label class="choice"><input type="radio" name="difficultyChoice" value="medium"><span>Medium</span></label>
+        <label class="choice"><input type="radio" name="difficultyChoice" value="hard"><span>Hard</span></label>
+        <label class="choice"><input type="radio" name="difficultyChoice" value="expert"><span>Expert</span></label>
+        <label class="choice"><input type="radio" name="difficultyChoice" value="mixed"><span>Mixed</span></label>
+      </div><div class="difficulty-description" id="difficultyDescription">Borders, labels, and more direct clues. Recommended for your first game.</div></div>
+      <div class="setup-group"><span class="setup-label">Game length</span><div class="choice-grid round-grid">
+        <label class="choice"><input type="radio" name="roundChoice" value="5" checked><span>5 rounds</span></label>
+        <label class="choice"><input type="radio" name="roundChoice" value="10"><span>10 rounds</span></label>
+        <label class="choice"><input type="radio" name="roundChoice" value="15"><span>15 rounds</span></label>
+      </div></div>
+      <div class="start-actions"><button class="btn btn-primary" id="startGameBtn" type="button">Start a quick Easy game</button><button class="btn" id="startHowToBtn" type="button">How to play</button></div>
+      <div class="setup-error" id="setupError" role="alert"></div>
+    </div>
+  </section>
+
+  <div class="game-menu" id="gameMenu" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+    <div class="menu-card"><div class="menu-head"><h2 id="menuTitle">Game menu</h2><button class="menu-close" id="menuClose" type="button" aria-label="Close menu">×</button></div><div class="menu-actions">
+      <button class="btn btn-primary" id="resumeBtn" type="button">Resume game</button>
+      <button class="btn" id="menuHowToBtn" type="button">How to play</button>
+      <button class="btn" id="menuSoundBtn" type="button">Sound on</button>
+      <button class="btn danger-btn" id="newGameBtn" type="button">Start a new game</button>
+    </div></div>
+  </div>
+
+  <div class="confirm-dialog" id="confirmNewGame" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="confirm-card"><h2 id="confirmTitle">Start a new game?</h2><p>Your current score and progress will be lost.</p><div class="confirm-actions"><button class="btn" id="cancelNewGameBtn" type="button">Cancel</button><button class="btn btn-primary" id="confirmNewGameBtn" type="button">Start new game</button></div></div>
+  </div>
+
   <div class="tutorial" id="tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
     <div class="tutorial-card">
       <div class="tutorial-head"><h2 id="tutorialTitle">ⓘ How to play</h2><button class="tutorial-close" id="tutorialClose" type="button" aria-label="Close tutorial">×</button></div>
       <p class="tutorial-sub">Find the correct location on the globe.</p>
-      <div class="tutorial-steps"><div class="tutorial-step"><div class="tutorial-icon">⌖</div><div><strong>1. Place your guess</strong><span>Rotate and zoom the globe, then click the location where you think the event happened.</span></div></div><div class="tutorial-then">THEN</div><div class="tutorial-step"><div class="tutorial-icon">✓</div><div><strong>2. Lock in your guess</strong><span>Confirm your marker to reveal the answer, distance, and points earned.</span></div></div></div>
-      <div class="tutorial-tips"><span><b>Zoom:</b> scroll, pinch, or use + / −</span><span><b>Map aids:</b> Easy shows borders and labels; Medium shows borders; Hard and Expert hide both</span><span><b>Expert:</b> category, era, and regional hints are hidden</span></div>
+      <div class="tutorial-steps"><div class="tutorial-step"><div class="tutorial-icon">⌖</div><div><strong>1. Place your guess</strong><span>Rotate and zoom the globe, then tap the location where you think the event happened. Tap another location to move your marker.</span></div></div><div class="tutorial-then">THEN</div><div class="tutorial-step"><div class="tutorial-icon">✓</div><div><strong>2. Lock in your guess</strong><span>Confirm your marker to reveal the answer, distance, and points earned.</span></div></div></div>
+      <div class="tutorial-tips"><span><b>Zoom:</b> scroll, pinch, or use + / −</span><span><b>Map aids:</b> Easy shows borders and labels; Medium shows borders; Hard and Expert hide both</span><span><b>Mixed:</b> uses all four levels without repeating an event</span></div>
       <div class="tutorial-footer"><button class="btn btn-primary" id="tutorialGotIt" type="button">Got it!</button></div>
     </div>
   </div>
+
   <div class="end-screen" id="endScreen"><div class="end-card"><div class="end-icon">🏛️</div><h2 id="endTitle">History Hunter</h2><p id="endSubtitle">You followed the past across the planet.</p><div class="final-score" id="finalScore">0<small>total points</small></div><div class="end-stats"><div><strong id="bestGuess">0 km</strong><span>Best guess</span></div><div><strong id="avgDistance">0 km</strong><span>Average miss</span></div><div><strong id="bestStreak">0</strong><span>Best streak</span></div></div><button class="btn btn-primary" id="playAgainBtn" type="button">Play again</button></div></div>
   <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
   <script src="globe.js"></script>
