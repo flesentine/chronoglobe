@@ -1,7 +1,7 @@
 (()=>{
   const STORAGE_KEY='chronoglobeActiveGame';
   const SAVE_SCHEMA_VERSION=1;
-  const APP_VERSION='1.7.0';
+  const APP_VERSION='1.8.0';
   const CONTENT_VERSION='legacy-150-v1';
   const MAX_AGE_MS=1000*60*60*24*30;
   function safeRead(){try{return localStorage.getItem(STORAGE_KEY)}catch{return null}}
@@ -32,4 +32,9 @@
   }
   function load(facts){const text=safeRead();if(!text)return {ok:false,reason:'missing'};try{const checked=validate(JSON.parse(text),facts);if(!checked.ok)clear();return checked}catch{clear();return {ok:false,reason:'parse'}}}
   window.ChronoPersistence=Object.freeze({STORAGE_KEY,SAVE_SCHEMA_VERSION,APP_VERSION,CONTENT_VERSION,save,load,clear,serialize});
+
+  const replayScript=document.createElement('script');
+  replayScript.src='replayability.js';
+  replayScript.defer=true;
+  document.head.appendChild(replayScript);
 })();
