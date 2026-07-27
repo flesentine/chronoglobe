@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ChronoGlobe Release Readiness</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07111f;--card:#0e1d31;--line:#29415e;--text:#edf7ff;--muted:#9eb3c8;--good:#65e9ff;--warn:#ffd166;--bad:#ff7b88}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif}.wrap{max-width:1000px;margin:auto;padding:28px}.lede{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:22px 0}.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.metric{font-size:30px;font-weight:800}.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}.check{padding:12px 0;border-bottom:1px solid var(--line)}.check:last-child{border-bottom:0}.detail{color:var(--muted);font-size:13px}.status{display:inline-block;min-width:64px;font-weight:800}
+  </style>
+</head>
+<body><main class="wrap">
+  <h1>ChronoGlobe release readiness</h1>
+  <p class="lede">One consolidated gate for the production dataset, editorial content, persistence contract, script loading, and optional map assets.</p>
+  <div id="summary" class="grid"></div>
+  <section class="panel"><h2>Checks</h2><div id="checks"></div></section>
+</main>
+<script src="../facts/facts-core.js"></script>
+<script src="../facts/seeds-1.js"></script><script src="../facts/seeds-2.js"></script><script src="../facts/seeds-3.js"></script><script src="../facts/seeds-4.js"></script>
+<script src="../facts/expert-content.js"></script>
+<script src="../facts/canonical-events.js"></script>
+<script src="../facts/canonical-validation.js"></script>
+<script src="../facts/facts-final.js"></script>
+<script src="../deck.js"></script>
+<script src="../scoring.js"></script>
+<script src="../persistence.js"></script>
+<script>
+(async()=>{
+  const checks=[];
+  const add=(name,ok,detail,severity='blocker')=>checks.push({name,ok:Boolean(ok),detail,severity});
+  const events=window.CHRONO_CANONICAL_EVENTS||[];
+  const facts=window.CHRONO_FACTS||[];
+  const report=window.ChronoCanonicalValidation?.validate(events,facts);
+  const expertCount=Object.keys(window.CHRONO_EXPERT_CONTENT||{}).length;
+
+  add('Canonical runtime active',window.CHRONO_RUNTIME_SOURCE==='canonical',`Source: ${window.CHRONO_RUNTIME_SOURCE||'missing'}`);
+  add('Canonical structure valid',report?.ok===true,report?`${report.summary.errors} errors, ${report.summary.warnings} warnings`:'Validation report unavailable');
+  add('Dataset cardinality',events.length===150&&facts.length===600,`${events.length} events, ${facts.length} variants`);
+  add('Expert editorial coverage',expertCount===150&&events.filter(event=>event.variants?.expert?.reviewed).length===150,`${expertCount} content entries; ${events.filter(event=>event.variants?.expert?.reviewed).length} reviewed`);
+  add('Stable identity',new Set(facts.map(f=>f.eventId)).size===150&&new Set(facts.map(f=>f.variantId)).size===600,'150 unique event IDs and 600 unique variant IDs required');
+  add('Persistence contract',window.ChronoPersistence?.APP_VERSION==='1.9.0'&&window.ChronoPersistence?.CONTENT_VERSION==='canonical-150-expert-v1',`App ${window.ChronoPersistence?.APP_VERSION||'missing'} · content ${window.ChronoPersistence?.CONTENT_VERSION||'missing'}`);
+  add('Scoring and deck services',typeof window.ChronoDeck?.buildRoundDeck==='function'&&typeof window.ChronoScoring?.roundResult==='function','Required runtime services must be available');
+  add('No obsolete Expert loader',[...document.scripts].every(script=>!script.src.endsWith('/expert-overrides.js')),'Deleted compatibility script must not load');
+
+  let localAsset=false;
+  try{const response=await fetch('../data/country-boundaries.geojson',{method:'HEAD',cache:'no-store'});localAsset=response.ok}catch{}
+  add('Local country boundaries',localAsset,localAsset?'Vendored GeoJSON is available':'Optional asset missing; remote fallback remains available','warning');
+
+  const blockers=checks.filter(check=>check.severity==='blocker'&&!check.ok).length;
+  const warnings=checks.filter(check=>check.severity==='warning'&&!check.ok).length;
+  const ready=blockers===0;
+  document.getElementById('summary').innerHTML=`<div class="card"><div class="metric ${ready?'good':'bad'}">${ready?'READY':'BLOCKED'}</div><div>Release gate</div></div><div class="card"><div class="metric ${blockers?'bad':'good'}">${blockers}</div><div>Blockers</div></div><div class="card"><div class="metric ${warnings?'warn':'good'}">${warnings}</div><div>Warnings</div></div><div class="card"><div class="metric good">${checks.length}</div><div>Total checks</div></div>`;
+  document.getElementById('checks').innerHTML=checks.map(check=>`<div class="check"><span class="status ${check.ok?'good':check.severity==='warning'?'warn':'bad'}">${check.ok?'PASS':check.severity==='warning'?'WARN':'FAIL'}</span> <strong>${check.name}</strong><div class="detail">${check.detail}</div></div>`).join('');
+  window.CHRONO_RELEASE_READINESS=Object.freeze({ready,blockers,warnings,checks:Object.freeze(checks.map(check=>Object.freeze({...check})))});
+})();
+</script>
+</body></html>
