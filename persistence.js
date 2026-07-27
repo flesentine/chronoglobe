@@ -32,9 +32,4 @@
   }
   function load(facts){const text=safeRead();if(!text)return {ok:false,reason:'missing'};try{const checked=validate(JSON.parse(text),facts);if(!checked.ok)clear();return checked}catch{clear();return {ok:false,reason:'parse'}}}
   window.ChronoPersistence=Object.freeze({STORAGE_KEY,SAVE_SCHEMA_VERSION,APP_VERSION,CONTENT_VERSION,save,load,clear,serialize});
-
-  const replayScript=document.createElement('script');
-  replayScript.src='replayability.js';
-  replayScript.defer=true;
-  document.head.appendChild(replayScript);
 })();
