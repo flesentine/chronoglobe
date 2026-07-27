@@ -28,7 +28,32 @@
     'chrono-event-122':{fact:'For more than a millennium, an imperial capital shaped Japanese court culture, temple architecture, gardens, and traditional arts.',hint:'Kiyomizu-dera and the Golden Pavilion stand in this former capital.'},
     'chrono-event-123':{fact:'An early Japanese capital built a monumental wooden temple housing a colossal bronze Buddha.',hint:'Tōdai-ji is the defining landmark.'},
     'chrono-event-124':{fact:'Japan’s first durable warrior government established its headquarters in a coastal city south of the imperial court.',hint:'The Kamakura shogunate took its name from this city.'},
-    'chrono-event-125':{fact:'A long and costly island campaign became the final major land battle of the Pacific War.',hint:'The battle took place in the Ryukyu Islands south of Japan’s main islands.'}
+    'chrono-event-125':{fact:'A long and costly island campaign became the final major land battle of the Pacific War.',hint:'The battle took place in the Ryukyu Islands south of Japan’s main islands.'},
+    'chrono-event-126':{fact:'A surprise carrier-based air attack devastated a United States naval base and brought the country directly into the Second World War.',hint:'The attack occurred on Oahu on December 7, 1941.'},
+    'chrono-event-127':{fact:'American carrier aircraft sank four Japanese fleet carriers in a battle that shifted the strategic balance in the Pacific.',hint:'The engagement took its name from a remote atoll northwest of Hawaii.'},
+    'chrono-event-128':{fact:'A European expedition commander was killed while intervening in a conflict between island communities in the central Philippines.',hint:'Ferdinand Magellan died on an island beside Cebu.'},
+    'chrono-event-129':{fact:'A month of street fighting, artillery fire, and massacres devastated a major capital during the closing months of the Pacific War.',hint:'The battle destroyed much of the capital of the Philippines.'},
+    'chrono-event-130':{fact:'Generations of mountain farmers shaped steep slopes into vast irrigated rice terraces.',hint:'The terraces are associated with the Ifugao people of northern Luzon.'},
+    'chrono-event-131':{fact:'A Khmer ruler created an immense temple complex whose towers became a national emblem.',hint:'The best-known monument is Angkor Wat.'},
+    'chrono-event-132':{fact:'Thousands of massive stone vessels lie scattered across upland fields, while their original function remains uncertain.',hint:'The megalithic landscape lies near Phonsavan in Laos.'},
+    'chrono-event-133':{fact:'A revolutionary leader proclaimed independence before a crowd after Japanese surrender ended the Second World War.',hint:'Ho Chi Minh read the declaration in the capital of northern Vietnam.'},
+    'chrono-event-134':{fact:'A French colonial garrison surrendered after a prolonged siege in a remote valley, accelerating the end of French rule in Indochina.',hint:'The 1954 battlefield lies in northwestern Vietnam.'},
+    'chrono-event-135':{fact:'An imperial citadel became the scene of prolonged urban combat and mass death during a major 1968 offensive.',hint:'The fighting occurred in Vietnam’s former imperial capital during Tet.'},
+    'chrono-event-136':{fact:'A new royal capital was founded beside a major river and organized around a fortified palace complex.',hint:'The city grew on the Chao Phraya after 1782.'},
+    'chrono-event-137':{fact:'Kings and patrons filled a broad plain beside a great river with thousands of Buddhist temples and stupas.',hint:'The archaeological landscape lies beside the Irrawaddy in Myanmar.'},
+    'chrono-event-138':{fact:'Mass demonstrations challenged military rule in a former colonial capital during the nationwide uprising of 1988.',hint:'The city was formerly known as Rangoon.'},
+    'chrono-event-139':{fact:'A Hindu temple complex dedicated to Shiva, Vishnu, and Brahma rose on the plains of central Java.',hint:'The tall sanctuary stands east of Borobudur near Yogyakarta.'},
+    'chrono-event-140':{fact:'A Dutch chartered company established its Asian headquarters in a fortified port once called Batavia.',hint:'The colonial city later became Indonesia’s capital.'},
+    'chrono-event-141':{fact:'A British trading post founded at a strategic maritime choke point grew into one of the world’s busiest ports.',hint:'Stamford Raffles established the settlement in 1819.'},
+    'chrono-event-142':{fact:'A wealthy sultanate controlled a narrow sea passage that connected the Indian Ocean with East Asian trade.',hint:'The port gave its name to the strait.'},
+    'chrono-event-143':{fact:'A European expedition made an early recorded landing on Australia’s eastern coast and collected unfamiliar plant specimens.',hint:'The bay’s modern name reflects the expedition’s botanical collecting.'},
+    'chrono-event-144':{fact:'Gold miners built a defensive stockade during a confrontation over mining licenses and demands for political representation.',hint:'The 1854 rebellion occurred near Ballarat in Victoria.'},
+    'chrono-event-145':{fact:'Representatives of the British Crown and many Māori chiefs signed an agreement that became foundational to New Zealand’s constitutional history.',hint:'The treaty took the name of its signing place in the Bay of Islands.'},
+    'chrono-event-146':{fact:'Geysers, hot springs, and nearby Māori communities made a geothermal district a major center of tourism and cultural performance.',hint:'The North Island city is closely associated with the Whakarewarewa thermal area.'},
+    'chrono-event-147':{fact:'An Andean imperial capital organized distant territories through roads, storehouses, temples, and royal estates.',hint:'The city was the political heart of the Inca Empire.'},
+    'chrono-event-148':{fact:'An Inca royal estate occupied a dramatic ridge above the winding Urubamba River and survived the Spanish conquest largely unknown to outsiders.',hint:'The mountain sanctuary is reached from the former Inca capital.'},
+    'chrono-event-149':{fact:'Desert communities created immense animals, lines, and geometric figures by removing dark surface stones.',hint:'The geoglyphs spread across an arid plain in southern Peru.'},
+    'chrono-event-150':{fact:'A monumental high-altitude city near a great lake became the center of a powerful pre-Inca state.',hint:'The Gateway of the Sun is its best-known monument.'}
   };
   const expertOverrides=Object.freeze({...supplementalOverrides,...(window.CHRONO_EXPERT_OVERRIDES||{})});
 
