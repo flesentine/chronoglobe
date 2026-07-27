@@ -51,7 +51,32 @@
     'chrono-event-047':{fact:'Weekly demonstrations beginning at a church helped erode one-party rule in East Germany.',hint:'These became known as the Monday demonstrations.'},
     'chrono-event-048':{fact:'Diplomats and monarchs redrew Europe after Napoleon’s defeat while social life and negotiation unfolded side by side.',hint:'Metternich was the dominant statesman at the congress.'},
     'chrono-event-049':{fact:'A UN-declared safe area fell, after which thousands of Bosniak men and boys were murdered in a genocide.',hint:'International courts identified this eastern Bosnian town with the massacre.'},
-    'chrono-event-050':{fact:'An Ottoman ruler captured a fortress controlling the meeting point of two major rivers, opening a route deeper into Europe.',hint:'Suleiman the Magnificent took the city at the confluence of the Sava and Danube.'}
+    'chrono-event-050':{fact:'An Ottoman ruler captured a fortress controlling the meeting point of two major rivers, opening a route deeper into Europe.',hint:'Suleiman the Magnificent took the city at the confluence of the Sava and Danube.'},
+    'chrono-event-051':{fact:'Mass demonstrations and a negotiated political transition ended one-party rule in a revolution named for a soft fabric.',hint:'The movement unfolded in the historic capital of Bohemia.'},
+    'chrono-event-052':{fact:'Napoleon defeated Austrian and Russian armies in the Battle of the Three Emperors.',hint:'The battlefield lies east of Brno in present-day Czechia.'},
+    'chrono-event-053':{fact:'Nazi Germany built its largest concentration and extermination camp complex near a Polish town.',hint:'The site is known by the German name of Oświęcim.'},
+    'chrono-event-054':{fact:'An underground army fought a sixty-three-day uprising against German occupation before the city was systematically destroyed.',hint:'This was the 1944 uprising in Poland’s capital, not the earlier ghetto revolt.'},
+    'chrono-event-055':{fact:'Revolution and civil conflict shifted power from an imperial government to a communist state whose political center was the Kremlin.',hint:'The answer is the Russian capital on the Moskva River.'},
+    'chrono-event-056':{fact:'Armed revolutionaries seized bridges, stations, and government buildings in a city then called Petrograd.',hint:'The October Revolution centered on the former imperial capital beside the Gulf of Finland.'},
+    'chrono-event-057':{fact:'Napoleon won a costly battle that opened the road toward Moscow without destroying the opposing army.',hint:'The battlefield lies west of Moscow and is central to the 1812 campaign.'},
+    'chrono-event-058':{fact:'A coalition led by a prince of Moscow defeated a Mongol-Tatar army in a battle celebrated as a milestone in Russian history.',hint:'Dmitry Donskoy is inseparable from this field south of Moscow.'},
+    'chrono-event-059':{fact:'A reactor explosion and fire released radioactive contamination across Europe and forced the abandonment of nearby settlements.',hint:'The damaged plant stood near Pripyat, north of Kyiv.'},
+    'chrono-event-060':{fact:'During the Nazi occupation, tens of thousands of Jews were murdered in mass shootings at a ravine beside a major city.',hint:'The ravine lies within Kyiv.'},
+    'chrono-event-061':{fact:'Citizens developed direct political participation while monumental temples rose above the city on a rocky citadel.',hint:'The Acropolis and the classical assembly identify the location.'},
+    'chrono-event-062':{fact:'A sprawling Bronze Age palace complex became linked with the Minoans, a labyrinth, and a mythical bull-man.',hint:'Arthur Evans excavated this site on Crete.'},
+    'chrono-event-063':{fact:'Two battles defeated the armies of Brutus and Cassius, ending organized resistance by Caesar’s assassins.',hint:'The battlefield lies in northern Greece and gave its name to the campaign.'},
+    'chrono-event-064':{fact:'An imperial capital on the Adriatic preserves churches whose interiors glow with sixth-century mosaics.',hint:'San Vitale is the strongest architectural clue.'},
+    'chrono-event-065':{fact:'A republic built on islands and canals became a commercial bridge between Europe and the eastern Mediterranean.',hint:'Its ruler was the doge, and its ceremonial center faces a lagoon.'},
+    'chrono-event-066':{fact:'Leonardo painted a celebrated final meal across the wall of a Dominican monastery’s refectory.',hint:'The mural remains at Santa Maria delle Grazie.'},
+    'chrono-event-067':{fact:'Renaissance artists and architects reshaped the ceremonial center of the Roman Catholic Church.',hint:'St. Peter’s Basilica and the Sistine Chapel lie inside this sovereign enclave.'},
+    'chrono-event-068':{fact:'Volcanic surges buried a Roman seaside town, preserving timber, furniture, and upper floors with unusual completeness.',hint:'This smaller neighbor of Pompeii lay closer to Vesuvius.'},
+    'chrono-event-069':{fact:'A Greek city resisted Roman siege with defensive devices traditionally attributed to a famous mathematician and inventor.',hint:'Archimedes was killed when this Sicilian city fell.'},
+    'chrono-event-070':{fact:'A trading center at the edge of the Sahara became renowned for manuscript libraries and Islamic scholarship.',hint:'Sankore and the Niger bend point to the location.'},
+    'chrono-event-071':{fact:'An African kingdom built enormous mortarless stone walls and towers that later gave a modern country its name.',hint:'The Great Enclosure is the site’s defining structure.'},
+    'chrono-event-072':{fact:'A Red Sea kingdom raised towering stone stelae, minted coins, and adopted Christianity in late antiquity.',hint:'The ancient capital lies in northern Ethiopia.'},
+    'chrono-event-073':{fact:'Menelik II’s army defeated an invading Italian force, preserving Ethiopian independence during the partition of Africa.',hint:'The decisive battle occurred in northern Ethiopia in 1896.'},
+    'chrono-event-074':{fact:'Fossils, stone tools, and long archaeological sequences from a rift-valley gorge transformed the study of human origins.',hint:'Louis and Mary Leakey are closely associated with the site.'},
+    'chrono-event-075':{fact:'A Portuguese expedition reached a major Swahili port while opening a sea route toward India.',hint:'Fort Jesus later guarded this harbor on the Kenyan coast.'}
   };
 
   window.CHRONO_EXPERT_OVERRIDES=Object.freeze(overrides);
