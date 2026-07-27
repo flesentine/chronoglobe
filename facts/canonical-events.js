@@ -3,7 +3,7 @@
 
   const ACTIVE_EVENT_COUNT=150;
   const seeds=(window.CHRONO_SEEDS||[]).slice(0,ACTIVE_EVENT_COUNT);
-  const supplementalOverrides={
+  const finalBatch={
     'chrono-event-101':{fact:'A port on the lower Ganges became the early capital of British India and a center of Bengali intellectual and cultural renewal.',hint:'The city was formerly known in English as Calcutta.'},
     'chrono-event-102':{fact:'A trading company defeated the nawab of Bengal in a battle that opened the way to territorial empire in India.',hint:'Robert Clive’s victory over Siraj ud-Daulah identifies the battlefield.'},
     'chrono-event-103':{fact:'A wandering seeker attained enlightenment beneath a sacred fig tree and became known as the Buddha.',hint:'The Mahabodhi Temple marks the site in Bihar.'},
@@ -55,58 +55,30 @@
     'chrono-event-149':{fact:'Desert communities created immense animals, lines, and geometric figures by removing dark surface stones.',hint:'The geoglyphs spread across an arid plain in southern Peru.'},
     'chrono-event-150':{fact:'A monumental high-altitude city near a great lake became the center of a powerful pre-Inca state.',hint:'The Gateway of the Sun is its best-known monument.'}
   };
-  const expertOverrides=Object.freeze({...supplementalOverrides,...(window.CHRONO_EXPERT_OVERRIDES||{})});
+
+  const expertContent=Object.freeze({...(window.CHRONO_EXPERT_OVERRIDES||{}),...finalBatch});
+  window.CHRONO_EXPERT_CONTENT=expertContent;
 
   function eventFromSeed(seed,index){
     const [category,era,baseFact,region,easyHint,mediumHint,hardHint,place,lat,lng]=seed;
     const eventId=`chrono-event-${String(index+1).padStart(3,'0')}`;
-    const reviewedExpert=expertOverrides[eventId];
+    const reviewedExpert=expertContent[eventId];
     return Object.freeze({
-      eventId,
-      place,
-      lat,
-      lng,
-      category,
-      era,
-      context:baseFact,
+      eventId,place,lat,lng,category,era,context:baseFact,
       migration:Object.freeze({source:'legacy-seed',sourceIndex:index,status:reviewedExpert?'expert-reviewed':'generated'}),
       variants:Object.freeze({
         easy:Object.freeze({variantId:`${eventId}-easy`,fact:region?`${baseFact} This happened somewhere in ${region}.`:baseFact,hint:easyHint}),
         medium:Object.freeze({variantId:`${eventId}-medium`,fact:baseFact,hint:mediumHint}),
         hard:Object.freeze({variantId:`${eventId}-hard`,fact:baseFact,hint:hardHint}),
-        expert:Object.freeze({
-          variantId:`${eventId}-expert`,
-          fact:reviewedExpert?.fact||baseFact,
-          hint:reviewedExpert?.hint||'No regional clue at this level. Identify the exact historical site from the event itself.',
-          reviewed:Boolean(reviewedExpert)
-        })
+        expert:Object.freeze({variantId:`${eventId}-expert`,fact:reviewedExpert?.fact||baseFact,hint:reviewedExpert?.hint||'',reviewed:Boolean(reviewedExpert)})
       })
     });
   }
 
   const events=Object.freeze(seeds.map(eventFromSeed));
-
-  function expandEvent(event){
-    return ['easy','medium','hard','expert'].map(difficulty=>{
-      const variant=event.variants[difficulty];
-      return Object.freeze({
-        eventId:event.eventId,
-        variantId:variant.variantId,
-        difficulty,
-        category:difficulty==='expert'?'Mystery':event.category,
-        era:difficulty==='expert'?'Hidden':event.era,
-        fact:variant.fact,
-        hint:variant.hint,
-        place:event.place,
-        lat:event.lat,
-        lng:event.lng,
-        context:event.context
-      });
-    });
-  }
-
+  function expandEvent(event){return ['easy','medium','hard','expert'].map(difficulty=>{const variant=event.variants[difficulty];return Object.freeze({eventId:event.eventId,variantId:variant.variantId,difficulty,category:difficulty==='expert'?'Mystery':event.category,era:difficulty==='expert'?'Hidden':event.era,fact:variant.fact,hint:variant.hint,place:event.place,lat:event.lat,lng:event.lng,context:event.context})})}
   function expandAll(source=events){return Object.freeze(source.flatMap(expandEvent))}
 
   window.CHRONO_CANONICAL_EVENTS=events;
-  window.ChronoCanonical=Object.freeze({ACTIVE_EVENT_COUNT,eventFromSeed,expandEvent,expandAll});
+  window.ChronoCanonical=Object.freeze({ACTIVE_EVENT_COUNT,eventFromSeed,expandEvent,expandAll,expertContent});
 })();
