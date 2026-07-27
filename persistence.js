@@ -1,8 +1,8 @@
 (()=>{
   const STORAGE_KEY='chronoglobeActiveGame';
   const SAVE_SCHEMA_VERSION=1;
-  const APP_VERSION='1.8.0';
-  const CONTENT_VERSION='legacy-150-v1';
+  const APP_VERSION='1.9.0';
+  const CONTENT_VERSION='canonical-150-expert-v1';
   const MAX_AGE_MS=1000*60*60*24*30;
   function safeRead(){try{return localStorage.getItem(STORAGE_KEY)}catch{return null}}
   function safeWrite(value){try{localStorage.setItem(STORAGE_KEY,value);return true}catch{return false}}
