@@ -4,11 +4,31 @@
   const originalGlobe = window.Globe;
   if (typeof originalGlobe !== 'function') return;
 
-  // Natural Earth 1:110m is substantially smaller than the previous full-detail
-  // dataset. This remains an external fallback until the same file is checked
-  // into the repository during the final asset-vendoring pass.
-  const COUNTRY_DATA = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
+  const LOCAL_COUNTRY_DATA = 'data/country-boundaries.geojson';
+  const FALLBACK_COUNTRY_DATA = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
   const REFERENCE_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+  let countryDataPromise = null;
+
+  async function fetchCountryData() {
+    if (countryDataPromise) return countryDataPromise;
+    countryDataPromise = (async () => {
+      for (const url of [LOCAL_COUNTRY_DATA, FALLBACK_COUNTRY_DATA]) {
+        try {
+          const response = await fetch(url, { cache: 'force-cache' });
+          if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+          const data = await response.json();
+          if (data?.type !== 'FeatureCollection' || !Array.isArray(data.features) || data.features.length < 170) {
+            throw new Error('Country boundary GeoJSON failed integrity checks');
+          }
+          return data;
+        } catch (error) {
+          console.warn(`ChronoGlobe could not load country boundaries from ${url}`, error);
+        }
+      }
+      throw new Error('No country boundary source was available');
+    })();
+    return countryDataPromise;
+  }
 
   window.Globe = () => host => {
     const globe = originalGlobe()(host);
@@ -26,30 +46,20 @@
     const applyMode = mode => {
       requestedMode = mode || 'medium';
       if (!globe.map || !globe._loaded) return;
-
       const showBorders = requestedMode === 'easy' || requestedMode === 'medium';
       const showLabels = requestedMode === 'easy';
-
-      if (globe.map.getLayer('country-borders')) {
-        globe.map.setLayoutProperty('country-borders', 'visibility', showBorders ? 'visible' : 'none');
-      }
-      if (globe.map.getLayer('country-reference-labels')) {
-        globe.map.setLayoutProperty('country-reference-labels', 'visibility', showLabels ? 'visible' : 'none');
-      }
+      if (globe.map.getLayer('country-borders')) globe.map.setLayoutProperty('country-borders', 'visibility', showBorders ? 'visible' : 'none');
+      if (globe.map.getLayer('country-reference-labels')) globe.map.setLayoutProperty('country-reference-labels', 'visibility', showLabels ? 'visible' : 'none');
     };
 
-    const installLayers = () => {
+    const installLayers = async () => {
       if (!globe.map || installing) return;
       installing = true;
-
       try {
         if (!globe.map.getSource('country-boundaries')) {
-          globe.map.addSource('country-boundaries', {
-            type: 'geojson',
-            data: COUNTRY_DATA,
-            generateId: true
-          });
-
+          const countryData = await fetchCountryData();
+          if (!globe.map || globe.map.getSource('country-boundaries')) return;
+          globe.map.addSource('country-boundaries', { type: 'geojson', data: countryData, generateId: true });
           globe.map.addLayer({
             id: 'country-borders',
             type: 'line',
@@ -58,18 +68,8 @@
             maxzoom: 11,
             layout: { visibility: 'visible' },
             paint: {
-              'line-color': [
-                'interpolate', ['linear'], ['zoom'],
-                1.7, 'rgba(220,245,255,0.26)',
-                4, 'rgba(220,245,255,0.40)',
-                8, 'rgba(220,245,255,0.56)'
-              ],
-              'line-width': [
-                'interpolate', ['linear'], ['zoom'],
-                1.7, 0.45,
-                5, 0.8,
-                9, 1.15
-              ],
+              'line-color': ['interpolate', ['linear'], ['zoom'], 1.7, 'rgba(220,245,255,0.26)', 4, 'rgba(220,245,255,0.40)', 8, 'rgba(220,245,255,0.56)'],
+              'line-width': ['interpolate', ['linear'], ['zoom'], 1.7, 0.45, 5, 0.8, 9, 1.15],
               'line-blur': 0.15
             }
           });
@@ -84,7 +84,6 @@
             maxzoom: 16,
             attribution: 'Reference boundaries and places © Esri'
           });
-
           globe.map.addLayer({
             id: 'country-reference-labels',
             type: 'raster',
@@ -93,17 +92,13 @@
             maxzoom: 9.5,
             layout: { visibility: 'none' },
             paint: {
-              'raster-opacity': [
-                'interpolate', ['linear'], ['zoom'],
-                2.1, 0.62,
-                4.5, 0.78,
-                8.5, 0.68
-              ],
+              'raster-opacity': ['interpolate', ['linear'], ['zoom'], 2.1, 0.62, 4.5, 0.78, 8.5, 0.68],
               'raster-fade-duration': 120
             }
           });
         }
 
+        setBadge('', false);
         applyMode(requestedMode);
       } catch (error) {
         console.warn('ChronoGlobe map aids could not be installed', error);
@@ -126,14 +121,10 @@
           setBadge('Map aids unavailable — gameplay still works', true);
         }
       });
-
       if (globe._loaded) installLayers();
       else globe.map.on('load', installLayers);
-
       globe.map.on('styledata', () => {
-        if (globe._loaded && (!globe.map.getSource('country-boundaries') || !globe.map.getSource('country-reference'))) {
-          installLayers();
-        }
+        if (globe._loaded && (!globe.map.getSource('country-boundaries') || !globe.map.getSource('country-reference'))) installLayers();
       });
     }
 
