@@ -1,0 +1,15 @@
+{
+  "name": "chronoglobe",
+  "version": "1.9.0",
+  "private": true,
+  "description": "ChronoGlobe browser game smoke tests",
+  "scripts": {
+    "serve": "python3 -m http.server 4173",
+    "test": "playwright test",
+    "test:smoke": "playwright test tests/smoke.spec.js",
+    "test:mobile": "playwright test tests/mobile-layout.spec.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}
