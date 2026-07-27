@@ -1,0 +1,51 @@
+name: Vendor country boundaries
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/vendor-country-boundaries.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Natural Earth 1:110m countries
+        run: |
+          mkdir -p data
+          curl --fail --location --retry 3 \
+            --output data/country-boundaries.geojson \
+            https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson
+
+      - name: Validate GeoJSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('data/country-boundaries.geojson')
+          data = json.loads(path.read_text())
+          assert data.get('type') == 'FeatureCollection'
+          features = data.get('features') or []
+          assert len(features) >= 170, len(features)
+          assert path.stat().st_size > 100_000
+          print(f'Validated {len(features)} country features, {path.stat().st_size:,} bytes')
+          PY
+
+      - name: Commit vendored asset
+        run: |
+          if git diff --quiet -- data/country-boundaries.geojson; then
+            echo 'Country boundary asset is already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/country-boundaries.geojson
+          git commit -m 'Vendor Natural Earth country boundaries'
+          git push
