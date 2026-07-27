@@ -1,0 +1,11 @@
+.resume-dialog{position:fixed;z-index:55;inset:0;display:none;place-items:center;padding:20px;background:rgba(0,4,10,.78);backdrop-filter:blur(14px)}
+.resume-dialog.show{display:grid}
+.resume-card{width:min(470px,100%);padding:28px;border:1px solid rgba(101,233,255,.3);border-radius:24px;background:linear-gradient(160deg,rgba(10,27,47,.99),rgba(5,14,28,.98));box-shadow:0 30px 100px rgba(0,0,0,.6);text-align:center}
+.resume-card h2{margin:8px 0 10px;font-size:clamp(24px,5vw,34px)}
+.resume-card>p{margin:8px auto;color:var(--muted);line-height:1.55}
+.resume-card #resumeGameSummary{color:var(--text);font-weight:850;font-size:17px}
+.resume-icon{width:60px;height:60px;margin:auto;display:grid;place-items:center;border-radius:20px;background:linear-gradient(135deg,var(--cyan),#8fb6ff);color:#03111b;font-size:34px;font-weight:900}
+.resume-copy{max-width:380px;font-size:13px}
+.resume-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:10px;margin-top:22px}
+@media(max-width:480px){.resume-card{padding:22px 16px;border-radius:20px}.resume-actions{grid-template-columns:1fr}.resume-actions .btn-primary{order:-1}}
+@media(prefers-reduced-motion:reduce){.resume-dialog,.resume-card{animation:none!important;transition:none!important}}
