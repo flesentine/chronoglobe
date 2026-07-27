@@ -26,7 +26,32 @@
     'chrono-event-022':{fact:'A heavily fortified imperial capital fell to Mehmed II after a siege that transformed power between Europe and Asia.',hint:'The city controls the Bosporus.'},
     'chrono-event-023':{fact:'The final Muslim-ruled kingdom in Iberia surrendered to the Catholic monarchs in 1492.',hint:'Its palace-fortress is the Alhambra.'},
     'chrono-event-024':{fact:'A wealthy medieval capital became a center of scholarship and architecture under an Iberian caliphate.',hint:'Its best-known monument began as the Great Mosque.'},
-    'chrono-event-025':{fact:'Arabic, Greek, and Hebrew works were translated into Latin in a medieval hill city known for cultural exchange.',hint:'The city became associated with a major translation movement in central Iberia.'}
+    'chrono-event-025':{fact:'Arabic, Greek, and Hebrew works were translated into Latin in a medieval hill city known for cultural exchange.',hint:'The city became associated with a major translation movement in central Iberia.'},
+    'chrono-event-026':{fact:'A windswept cape became a symbolic base for the maritime experiments that helped launch Portugal’s age of oceanic expansion.',hint:'Prince Henry the Navigator is traditionally linked with this Algarve promontory.'},
+    'chrono-event-027':{fact:'A fleet sailed from a river port on the expedition that ultimately achieved the first circumnavigation of Earth.',hint:'The voyage began under Ferdinand Magellan from an Andalusian port.'},
+    'chrono-event-028':{fact:'A city on a tidal river became the political center of Britain and later the command hub of a global empire.',hint:'Its defining river is the Thames.'},
+    'chrono-event-029':{fact:'A monarch accepted a charter in a riverside meadow, creating a lasting symbol of limits on royal power.',hint:'The agreement was Magna Carta, sealed west of London.'},
+    'chrono-event-030':{fact:'The killing of an archbishop inside a cathedral transformed this city into one of medieval Europe’s great pilgrimage destinations.',hint:'The victim was Thomas Becket.'},
+    'chrono-event-031':{fact:'Communities arranged enormous stones into a ceremonial monument aligned with seasonal movements of the sun.',hint:'The monument stands on Salisbury Plain.'},
+    'chrono-event-032':{fact:'Work in a university laboratory helped scientists identify the double-helical structure of DNA.',hint:'The breakthrough is associated with the Cavendish Laboratory.'},
+    'chrono-event-033':{fact:'Delegates chose the meridian through a royal observatory as the world standard for longitude and timekeeping.',hint:'Longitude zero passes through this site in southeast London.'},
+    'chrono-event-034':{fact:'A violent storm uncovered a remarkably intact Neolithic settlement of stone houses beside a northern bay.',hint:'The village lies in the Orkney Islands beside the Bay of Skaill.'},
+    'chrono-event-035':{fact:'Insurgents occupied key buildings during an uprising that became a turning point in the struggle for Irish independence.',hint:'The General Post Office was a principal rebel stronghold.'},
+    'chrono-event-036':{fact:'A crowd stormed a fortress-prison whose fall became one of the defining symbols of a revolution.',hint:'The prison was the Bastille.'},
+    'chrono-event-037':{fact:'Victorious powers gathered in a palace complex to impose a peace settlement after the First World War.',hint:'The treaty was signed in the Hall of Mirrors.'},
+    'chrono-event-038':{fact:'Repeated fighting in a salient made this town synonymous with trench warfare, poison gas, and Passchendaele.',hint:'The battlefield region lies in western Belgium.'},
+    'chrono-event-039':{fact:'A fortress city endured a months-long battle that came to symbolize industrialized attrition in the First World War.',hint:'The defense became associated with the phrase “They shall not pass.”'},
+    'chrono-event-040':{fact:'German troops destroyed a village and killed its inhabitants; the ruins were preserved rather than rebuilt.',hint:'The memorial village remains frozen in its 1944 state.'},
+    'chrono-event-041':{fact:'Prehistoric artists filled a cave with powerful images of animals, signs, and hunting-era symbolism.',hint:'The cave is near Montignac in southwestern France.'},
+    'chrono-event-042':{fact:'International delegates created rules for protecting wounded soldiers and medical workers during war.',hint:'The city later gave its name to a family of humanitarian conventions.'},
+    'chrono-event-043':{fact:'Artists and writers founded an antiwar movement in a small nightclub during the First World War.',hint:'The movement was Dada, born at Cabaret Voltaire.'},
+    'chrono-event-044':{fact:'Crowds crossed newly opened checkpoints after a concrete and barbed-wire barrier had divided a city for decades.',hint:'The barrier was the most famous symbol of Cold War division.'},
+    'chrono-event-045':{fact:'Allied leaders met near a defeated capital to determine occupation zones and the postwar order in Europe.',hint:'Truman, Stalin, and Churchill or Attlee attended the conference.'},
+    'chrono-event-046':{fact:'An international tribunal prosecuted leading members of a defeated regime for war crimes and crimes against humanity.',hint:'The proceedings established the name of the city as shorthand for the trials.'},
+    'chrono-event-047':{fact:'Weekly demonstrations beginning at a church helped erode one-party rule in East Germany.',hint:'These became known as the Monday demonstrations.'},
+    'chrono-event-048':{fact:'Diplomats and monarchs redrew Europe after Napoleon’s defeat while social life and negotiation unfolded side by side.',hint:'Metternich was the dominant statesman at the congress.'},
+    'chrono-event-049':{fact:'A UN-declared safe area fell, after which thousands of Bosniak men and boys were murdered in a genocide.',hint:'International courts identified this eastern Bosnian town with the massacre.'},
+    'chrono-event-050':{fact:'An Ottoman ruler captured a fortress controlling the meeting point of two major rivers, opening a route deeper into Europe.',hint:'Suleiman the Magnificent took the city at the confluence of the Sava and Danube.'}
   };
 
   window.CHRONO_EXPERT_OVERRIDES=Object.freeze(overrides);
