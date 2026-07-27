@@ -1,1 +1,38 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChronoGlobe Expert Review</title><style>body{font:15px system-ui;background:#07111f;color:#eaf7ff;margin:0;padding:24px}main{max-width:1100px;margin:auto}h1{margin:0 0 8px}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0}.card,.row{background:#0d1d30;border:1px solid #23415c;border-radius:14px;padding:16px}.num{font-size:30px;font-weight:800;color:#67e8f9}.row{margin:10px 0}.row.reviewed{border-color:#2f7d68}.tag{display:inline-block;padding:3px 8px;border-radius:999px;background:#18344d;color:#9edfff;font-size:12px}.row h2{font-size:15px;margin:8px 0}.row p{margin:6px 0;color:#c8d8e6}.hint{color:#ffd980!important}.pending{opacity:.72}button{padding:10px 14px;border-radius:10px;border:1px solid #34536d;background:#10263b;color:white;cursor:pointer}</style></head><body><main><h1>Expert clue editorial review</h1><p>Reviewed Expert clues use explicit overrides. Pending rows still reuse the legacy clue and generic hint.</p><div class="summary" id="summary"></div><button id="copy">Copy pending IDs</button><section id="rows"></section></main><script src="../facts/facts-core.js"></script><script src="../facts/seeds-1.js"></script><script src="../facts/seeds-2.js"></script><script src="../facts/seeds-3.js"></script><script src="../facts/seeds-4.js"></script><script src="../facts/expert-overrides.js"></script><script src="../facts/canonical-events.js"></script><script src="../facts/canonical-validation.js"></script><script>const events=window.CHRONO_CANONICAL_EVENTS||[],reviewed=events.filter(e=>e.variants.expert.reviewed),pending=events.filter(e=>!e.variants.expert.reviewed);summary.innerHTML=`<div class=card><div class=num>${events.length}</div>Total events</div><div class=card><div class=num>${reviewed.length}</div>Reviewed</div><div class=card><div class=num>${pending.length}</div>Pending</div><div class=card><div class=num>${Math.round(reviewed.length/events.length*100)}%</div>Complete</div>`;rows.innerHTML=events.map(e=>`<article class="row ${e.variants.expert.reviewed?'reviewed':'pending'}"><span class=tag>${e.eventId} · ${e.variants.expert.reviewed?'Reviewed':'Pending'}</span><h2>${e.place}</h2><p>${e.variants.expert.fact}</p><p class=hint>Hint: ${e.variants.expert.hint}</p></article>`).join('');copy.onclick=()=>navigator.clipboard.writeText(pending.map(e=>e.eventId).join('\n'));</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ChronoGlobe Expert Review</title>
+  <style>
+    body{font:15px system-ui;background:#07111f;color:#eaf7ff;margin:0;padding:24px}main{max-width:1100px;margin:auto}h1{margin:0 0 8px}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0}.card,.row{background:#0d1d30;border:1px solid #23415c;border-radius:14px;padding:16px}.num{font-size:30px;font-weight:800;color:#67e8f9}.row{margin:10px 0}.row.reviewed{border-color:#2f7d68}.tag{display:inline-block;padding:3px 8px;border-radius:999px;background:#18344d;color:#9edfff;font-size:12px}.row h2{font-size:15px;margin:8px 0}.row p{margin:6px 0;color:#c8d8e6}.hint{color:#ffd980!important}.pending{opacity:.72}button{padding:10px 14px;border-radius:10px;border:1px solid #34536d;background:#10263b;color:white;cursor:pointer}
+  </style>
+</head>
+<body><main>
+  <h1>Expert clue editorial review</h1>
+  <p>Every reviewed Expert event has dedicated clue wording and a specific hint in the consolidated editorial source.</p>
+  <div class="summary" id="summary"></div>
+  <button id="copy" type="button">Copy pending IDs</button>
+  <section id="rows"></section>
+</main>
+<script src="../facts/facts-core.js"></script>
+<script src="../facts/seeds-1.js"></script>
+<script src="../facts/seeds-2.js"></script>
+<script src="../facts/seeds-3.js"></script>
+<script src="../facts/seeds-4.js"></script>
+<script src="../facts/expert-content.js"></script>
+<script src="../facts/canonical-events.js"></script>
+<script src="../facts/canonical-validation.js"></script>
+<script>
+(()=>{
+  const events=window.CHRONO_CANONICAL_EVENTS||[];
+  const reviewed=events.filter(event=>event.variants.expert.reviewed);
+  const pending=events.filter(event=>!event.variants.expert.reviewed);
+  const percent=events.length?Math.round(reviewed.length/events.length*100):0;
+  document.getElementById('summary').innerHTML=`<div class="card"><div class="num">${events.length}</div>Total events</div><div class="card"><div class="num">${reviewed.length}</div>Reviewed</div><div class="card"><div class="num">${pending.length}</div>Pending</div><div class="card"><div class="num">${percent}%</div>Complete</div>`;
+  document.getElementById('rows').innerHTML=events.map(event=>`<article class="row ${event.variants.expert.reviewed?'reviewed':'pending'}"><span class="tag">${event.eventId} · ${event.variants.expert.reviewed?'Reviewed':'Pending'}</span><h2>${event.place}</h2><p>${event.variants.expert.fact}</p><p class="hint">Hint: ${event.variants.expert.hint}</p></article>`).join('');
+  document.getElementById('copy').addEventListener('click',()=>navigator.clipboard.writeText(pending.map(event=>event.eventId).join('\n')));
+  window.CHRONO_EXPERT_REVIEW={total:events.length,reviewed:reviewed.length,pending:pending.length,percent};
+})();
+</script>
+</body></html>
