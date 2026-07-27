@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="package-c.css" />
   <link rel="stylesheet" href="package-d.css" />
   <link rel="stylesheet" href="package-e.css" />
+  <link rel="stylesheet" href="package-f.css" />
 </head>
 <body>
   <main class="app" id="gameApp" aria-hidden="true">
@@ -91,6 +92,16 @@
     </div>
   </section>
 
+  <div class="resume-dialog" id="resumeGameDialog" role="dialog" aria-modal="true" aria-labelledby="resumeGameTitle">
+    <div class="resume-card">
+      <div class="resume-icon" aria-hidden="true">↻</div>
+      <h2 id="resumeGameTitle">Resume your unfinished game?</h2>
+      <p id="resumeGameSummary">Round 1 of 5</p>
+      <p class="resume-copy">Your exact rounds, score, hint use, streak, and current guess were saved on this device.</p>
+      <div class="resume-actions"><button class="btn" id="discardSavedBtn" type="button">Start over</button><button class="btn btn-primary" id="resumeSavedBtn" type="button">Resume game</button></div>
+    </div>
+  </div>
+
   <div class="game-menu" id="gameMenu" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
     <div class="menu-card"><div class="menu-head"><h2 id="menuTitle">Game menu</h2><button class="menu-close" id="menuClose" type="button" aria-label="Close menu">×</button></div><div class="menu-actions">
       <button class="btn btn-primary" id="resumeBtn" type="button">Resume game</button>
@@ -100,13 +111,8 @@
     </div></div>
   </div>
 
-  <div class="confirm-dialog" id="confirmNewGame" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-    <div class="confirm-card"><h2 id="confirmTitle">Start a new game?</h2><p>Your current score and progress will be lost.</p><div class="confirm-actions"><button class="btn" id="cancelNewGameBtn" type="button">Cancel</button><button class="btn btn-primary" id="confirmNewGameBtn" type="button">Start new game</button></div></div>
-  </div>
-
-  <div class="confirm-dialog" id="confirmHint" role="dialog" aria-modal="true" aria-labelledby="confirmHintTitle">
-    <div class="confirm-card"><h2 id="confirmHintTitle">Use a hint?</h2><p>Using a hint limits this round’s maximum score from 10,000 to 8,000.</p><div class="confirm-actions"><button class="btn" id="cancelHintBtn" type="button">Cancel</button><button class="btn btn-primary" id="confirmHintBtn" type="button">Reveal hint</button></div></div>
-  </div>
+  <div class="confirm-dialog" id="confirmNewGame" role="dialog" aria-modal="true" aria-labelledby="confirmTitle"><div class="confirm-card"><h2 id="confirmTitle">Start a new game?</h2><p>Your current score and progress will be lost.</p><div class="confirm-actions"><button class="btn" id="cancelNewGameBtn" type="button">Cancel</button><button class="btn btn-primary" id="confirmNewGameBtn" type="button">Start new game</button></div></div></div>
+  <div class="confirm-dialog" id="confirmHint" role="dialog" aria-modal="true" aria-labelledby="confirmHintTitle"><div class="confirm-card"><h2 id="confirmHintTitle">Use a hint?</h2><p>Using a hint limits this round’s maximum score from 10,000 to 8,000.</p><div class="confirm-actions"><button class="btn" id="cancelHintBtn" type="button">Cancel</button><button class="btn btn-primary" id="confirmHintBtn" type="button">Reveal hint</button></div></div></div>
 
   <div class="tutorial" id="tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
     <div class="tutorial-card">
@@ -130,6 +136,7 @@
   <script src="facts/facts-final.js"></script>
   <script src="deck.js"></script>
   <script src="scoring.js"></script>
+  <script src="persistence.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
