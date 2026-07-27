@@ -19,6 +19,29 @@ async function placeGuess(page, lat = 0, lng = 0) {
   await expect(page.locator('#lockBtn')).toBeEnabled();
 }
 
+test('loads the complete canonical dataset exactly once', async ({ page }) => {
+  await openClean(page);
+  const runtime = await page.evaluate(() => ({
+    source: window.CHRONO_RUNTIME_SOURCE,
+    facts: window.CHRONO_FACTS?.length,
+    events: window.CHRONO_CANONICAL_EVENTS?.length,
+    reviewedExperts: window.CHRONO_CANONICAL_EVENTS?.filter(event => event.variants.expert.reviewed).length,
+    expertContent: Object.keys(window.CHRONO_EXPERT_CONTENT || {}).length,
+    replayScripts: [...document.scripts].filter(script => script.src.endsWith('/replayability.js')).length,
+    legacyExpertScripts: [...document.scripts].filter(script => script.src.endsWith('/expert-overrides.js')).length
+  }));
+
+  expect(runtime).toEqual({
+    source: 'canonical',
+    facts: 600,
+    events: 150,
+    reviewedExperts: 150,
+    expertContent: 150,
+    replayScripts: 1,
+    legacyExpertScripts: 0
+  });
+});
+
 test('starts a standard game, scores a guess, and advances', async ({ page }) => {
   await openClean(page);
   await startStandardGame(page);
