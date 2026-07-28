@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
+          cache: npm
 
       - name: Show tool versions
         run: |
@@ -36,14 +36,7 @@ jobs:
           python3 --version
 
       - name: Install locked dependencies
-        if: ${{ hashFiles('package-lock.json') != '' }}
         run: npm ci --no-audit --no-fund
-
-      - name: Install dependencies without lockfile
-        if: ${{ hashFiles('package-lock.json') == '' }}
-        run: |
-          echo 'WARNING: package-lock.json is missing; using npm install until the lockfile workflow is run.'
-          npm install --no-audit --no-fund
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
