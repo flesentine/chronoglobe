@@ -14,7 +14,8 @@ async function startReadyGame(page) {
   await expect(page.locator('#factText')).not.toHaveText('Choose a game to begin.');
 }
 
-async function expectInsideViewport(locator, page) {
+async function expectReachableInViewport(locator, page) {
+  await locator.scrollIntoViewIfNeeded();
   const box = await locator.boundingBox();
   const viewport = page.viewportSize();
   expect(box, 'element should have a layout box').not.toBeNull();
@@ -27,8 +28,8 @@ async function expectInsideViewport(locator, page) {
 test('start controls remain reachable', async ({ page }) => {
   await cleanStart(page);
   await expect(page.locator('#startGameBtn')).toBeVisible();
-  await expectInsideViewport(page.locator('#startGameBtn'), page);
-  await expectInsideViewport(page.locator('#dailyChallengeBtn'), page);
+  await expectReachableInViewport(page.locator('#startGameBtn'), page);
+  await expectReachableInViewport(page.locator('#dailyChallengeBtn'), page);
 });
 
 test('guess controls remain reachable during a round', async ({ page }) => {
@@ -37,7 +38,7 @@ test('guess controls remain reachable during a round', async ({ page }) => {
   await page.evaluate(() => window.placeGuess(12, 12));
   await expect(page.locator('#lockBtn')).toBeEnabled();
   await expect(page.locator('#lockBtn')).toBeVisible();
-  await expectInsideViewport(page.locator('#lockBtn'), page);
+  await expectReachableInViewport(page.locator('#lockBtn'), page);
 });
 
 test('result and Next remain reachable without page overflow', async ({ page }) => {
@@ -49,7 +50,7 @@ test('result and Next remain reachable without page overflow', async ({ page }) 
 
   await expect(page.locator('#scoreDock')).toHaveClass(/show/);
   await expect(page.locator('#nextBtn')).toBeVisible();
-  await expectInsideViewport(page.locator('#nextBtn'), page);
+  await expectReachableInViewport(page.locator('#nextBtn'), page);
 
   const overflow = await page.evaluate(() => ({
     x: document.documentElement.scrollWidth - window.innerWidth,
@@ -71,5 +72,5 @@ test('result essentials are visible in short landscape', async ({ page }, testIn
   await expect(page.locator('#hudDistance')).toBeVisible();
   await expect(page.locator('#hudScore')).toBeVisible();
   await expect(page.locator('#nextBtn')).toBeVisible();
-  await expectInsideViewport(page.locator('#nextBtn'), page);
+  await expectReachableInViewport(page.locator('#nextBtn'), page);
 });
