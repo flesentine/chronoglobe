@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -38,6 +39,30 @@ check('Browser smoke workflow exists', exists('.github/workflows/browser-smoke-t
 check('Country-boundary vendor workflow exists', exists('.github/workflows/vendor-country-boundaries.yml'));
 check('Package-lock generation workflow exists', exists('.github/workflows/generate-package-lock.yml'));
 check('Package lock is committed', exists('package-lock.json'));
+
+const localScriptSources = [...index.matchAll(/<script\s+[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi)]
+  .map(match => match[1])
+  .filter(source => !/^(?:https?:)?\/\//i.test(source));
+const localStyleSources = [...index.matchAll(/<link\s+[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi)]
+  .map(match => match[1])
+  .filter(source => !/^(?:https?:)?\/\//i.test(source));
+const missingScripts = localScriptSources.filter(source => !exists(source));
+const missingStyles = localStyleSources.filter(source => !exists(source));
+check('Every production script reference resolves locally', missingScripts.length === 0, missingScripts.join(', '));
+check('Every production stylesheet reference resolves locally', missingStyles.length === 0, missingStyles.join(', '));
+check('Production script references are unique', new Set(localScriptSources).size === localScriptSources.length, `${localScriptSources.length} references`);
+
+const syntaxTargets = [...new Set([
+  ...localScriptSources,
+  'tools/release-preflight.js',
+  ...fs.readdirSync(path.join(root, 'tests')).filter(file => file.endsWith('.js')).map(file => `tests/${file}`)
+])].filter(exists);
+const syntaxFailures = [];
+for (const file of syntaxTargets) {
+  const result = spawnSync(process.execPath, ['--check', path.join(root, file)], { encoding: 'utf8' });
+  if (result.status !== 0) syntaxFailures.push(`${file}: ${(result.stderr || result.stdout || 'syntax check failed').trim().split('\n')[0]}`);
+}
+check('Production and test JavaScript parses cleanly', syntaxFailures.length === 0, syntaxFailures.join(' | '));
 
 const expectedOrder = [
   'facts/seeds-1.js',
