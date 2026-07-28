@@ -8,7 +8,7 @@
   },
   "scripts": {
     "serve": "python3 -m http.server 4173",
-    "preflight": "node tools/release-preflight.js && node tools/verify-weekly-workflow.js && node tools/verify-production-dependencies.js && node tools/verify-release-metadata.js",
+    "preflight": "node tools/release-preflight.js && node tools/verify-weekly-workflow.js && node tools/verify-production-dependencies.js && node tools/verify-release-metadata.js && node tools/verify-security-policy.js",
     "test": "npm run preflight && npm run test:browser",
     "test:browser": "playwright test",
     "test:smoke": "npm run preflight && playwright test tests/smoke.spec.js",
