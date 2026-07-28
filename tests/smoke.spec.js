@@ -59,6 +59,28 @@ test('loads the complete canonical dataset exactly once', async ({ page }) => {
   });
 });
 
+test('loads the pinned MapLibre runtime and matching stylesheet', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  const dependency = await page.evaluate(() => ({
+    runtimeVersion: window.maplibregl?.version,
+    scripts: [...document.scripts]
+      .map(script => script.src)
+      .filter(source => source.includes('unpkg.com/maplibre-gl@')),
+    stylesheets: [...document.querySelectorAll('link[rel="stylesheet"]')]
+      .map(link => link.href)
+      .filter(source => source.includes('unpkg.com/maplibre-gl@'))
+  }));
+
+  expect(dependency.runtimeVersion).toBe('5.24.0');
+  expect(dependency.scripts).toEqual([
+    'https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js'
+  ]);
+  expect(dependency.stylesheets).toEqual([
+    'https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css'
+  ]);
+});
+
 test('starts a standard game, scores a guess, and advances', async ({ page }) => {
   await openClean(page);
   await startStandardGame(page);
