@@ -42,6 +42,8 @@ npm install
 npm run serve
 ```
 
+After `package-lock.json` has been generated and committed, use `npm ci` instead of `npm install` for a reproducible install.
+
 Then open `http://127.0.0.1:4173`.
 
 ## Release preflight and browser tests
@@ -52,7 +54,7 @@ Run the fast repository consistency checks without opening a browser:
 npm run preflight
 ```
 
-The preflight verifies version alignment, canonical script order, required workflows and diagnostics, deleted-loader absence, and single replayability loading.
+The preflight verifies version alignment, canonical script order, required workflows and diagnostics, deleted-loader absence, single replayability loading, and lockfile consistency when a lockfile exists.
 
 Install Chromium and run the full suite:
 
@@ -80,5 +82,6 @@ npm run test:diagnostics
 
 ## Remaining manual release steps
 
-1. Run **Actions → Vendor country boundaries → Run workflow** to commit `data/country-boundaries.geojson`. Gameplay already has a remote fallback, so this is a resilience improvement rather than a hard blocker.
-2. Run **Actions → Browser smoke tests → Run workflow** and confirm the Playwright suite passes. Connector-created commits have not produced visible status checks, so CI success has not yet been independently confirmed.
+1. Run **Actions → Generate package lock → Run workflow**. It resolves the pinned dependency tree, validates the locked Playwright version, and commits `package-lock.json`. Browser CI automatically uses `npm ci` after that file exists.
+2. Run **Actions → Vendor country boundaries → Run workflow** to commit `data/country-boundaries.geojson`. Gameplay already has a remote fallback, so this is a resilience improvement rather than a hard blocker.
+3. Run **Actions → Browser smoke tests → Run workflow** and confirm the Playwright suite passes. Connector-created commits have not produced visible status checks, so CI success has not yet been independently confirmed.
