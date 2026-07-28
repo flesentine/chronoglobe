@@ -17,6 +17,7 @@ const pkg = JSON.parse(read('package.json'));
 const persistence = read('persistence.js');
 const index = read('index.html');
 const readiness = read('tools/release-readiness.html');
+const workflow = read('.github/workflows/browser-smoke-tests.yml');
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
 const contentVersion = persistence.match(/CONTENT_VERSION='([^']+)'/)?.[1];
@@ -45,8 +46,10 @@ check('Production canonical scripts are present', positions.every(position => po
 check('Production canonical scripts are ordered correctly', positions.every((position, index) => index === 0 || position > positions[index - 1]));
 check('Replayability loads exactly once', (index.match(/src="replayability\.js"/g) || []).length === 1);
 check('Production page does not load deleted Expert overrides', !index.includes('expert-overrides.js'));
-check('Readiness dashboard checks app version', readiness.includes("APP_VERSION==='1.9.0'"));
-check('Readiness dashboard checks content version', readiness.includes("CONTENT_VERSION==='canonical-150-expert-v1'"));
+check('Readiness dashboard checks app version', readiness.includes(`APP_VERSION==='${pkg.version}'`), pkg.version);
+check('Readiness dashboard checks content version', readiness.includes(`CONTENT_VERSION==='${contentVersion}'`), contentVersion || 'missing');
+check('Default test command runs preflight first', pkg.scripts?.test === 'npm run preflight && playwright test');
+check('Browser workflow runs the package test command', /run:\s*npm test\b/.test(workflow));
 
 const failures = checks.filter(item => !item.passed);
 for (const item of checks) {
