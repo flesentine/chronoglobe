@@ -74,7 +74,7 @@ test('replayability diagnostic seeds Daily from the canonical content version', 
   expect(errors).toEqual([]);
 });
 
-test('release readiness has no hard blockers', async ({ page }, testInfo) => {
+test('release readiness requires valid bundled country boundaries', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   const errors = await openDiagnostic(page, '/tools/release-readiness.html');
   await expect(page.locator('#summary')).toContainText('READY');
@@ -84,6 +84,12 @@ test('release readiness has no hard blockers', async ({ page }, testInfo) => {
   });
   expect(report.ready).toBe(true);
   expect(report.blockers).toBe(0);
+  expect(report.warnings).toBe(0);
   expect(report.checks.filter(check => check.severity === 'blocker').every(check => check.ok)).toBe(true);
+  const boundaries = report.checks.find(check => check.name === 'Bundled country boundaries');
+  expect(boundaries).toBeTruthy();
+  expect(boundaries.severity).toBe('blocker');
+  expect(boundaries.ok).toBe(true);
+  expect(boundaries.detail).toMatch(/Bundled FeatureCollection contains \d+ country features/);
   expect(errors).toEqual([]);
 });
