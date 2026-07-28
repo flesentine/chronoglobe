@@ -59,8 +59,12 @@ check('Browser workflow uses Node 22', /node-version:\s*22\b/.test(workflow));
 check('Browser workflow runs the package test command', /run:\s*npm test\b/.test(workflow));
 check('Browser workflow uses npm ci when locked', /run:\s*npm ci\b/.test(workflow));
 check('Browser workflow has an explicit no-lock fallback', workflow.includes('package-lock.json is missing'));
+check('Lock workflow checks out main explicitly', /ref:\s*main\b/.test(lockWorkflow));
 check('Lock workflow generates package-lock only', /npm install --package-lock-only\b/.test(lockWorkflow));
 check('Lock workflow verifies the Playwright version', lockWorkflow.includes("node_modules/@playwright/test"));
+check('Lock workflow detects an untracked first lockfile', /git status --porcelain -- package-lock\.json/.test(lockWorkflow));
+check('Lock workflow pushes to main explicitly', /git push origin HEAD:main/.test(lockWorkflow));
+check('Lock workflow does not use git diff for first-run detection', !/git diff --quiet -- package-lock\.json/.test(lockWorkflow));
 
 if (exists('package-lock.json')) {
   const lock = JSON.parse(read('package-lock.json'));
