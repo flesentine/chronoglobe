@@ -7,6 +7,13 @@ async function cleanStart(page) {
   await expect(page.locator('#startScreen')).toHaveClass(/show/);
 }
 
+async function startReadyGame(page) {
+  await page.locator('#startGameBtn').click();
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#roundStat')).toContainText('1 / 5');
+  await expect(page.locator('#factText')).not.toHaveText('Choose a game to begin.');
+}
+
 async function expectInsideViewport(locator, page) {
   const box = await locator.boundingBox();
   const viewport = page.viewportSize();
@@ -26,16 +33,18 @@ test('start controls remain reachable', async ({ page }) => {
 
 test('guess controls remain reachable during a round', async ({ page }) => {
   await cleanStart(page);
-  await page.locator('#startGameBtn').click();
+  await startReadyGame(page);
   await page.evaluate(() => window.placeGuess(12, 12));
+  await expect(page.locator('#lockBtn')).toBeEnabled();
   await expect(page.locator('#lockBtn')).toBeVisible();
   await expectInsideViewport(page.locator('#lockBtn'), page);
 });
 
 test('result and Next remain reachable without page overflow', async ({ page }) => {
   await cleanStart(page);
-  await page.locator('#startGameBtn').click();
+  await startReadyGame(page);
   await page.evaluate(() => window.placeGuess(12, 12));
+  await expect(page.locator('#lockBtn')).toBeEnabled();
   await page.locator('#lockBtn').click();
 
   await expect(page.locator('#scoreDock')).toHaveClass(/show/);
@@ -53,8 +62,9 @@ test('result and Next remain reachable without page overflow', async ({ page }) 
 test('result essentials are visible in short landscape', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'short-landscape', 'Short-landscape-specific assertion');
   await cleanStart(page);
-  await page.locator('#startGameBtn').click();
+  await startReadyGame(page);
   await page.evaluate(() => window.placeGuess(12, 12));
+  await expect(page.locator('#lockBtn')).toBeEnabled();
   await page.locator('#lockBtn').click();
 
   await expect(page.locator('#hudLocation')).toBeVisible();
