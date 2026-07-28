@@ -22,6 +22,7 @@ const workflow = read('.github/workflows/browser-smoke-tests.yml');
 const lockWorkflow = read('.github/workflows/generate-package-lock.yml');
 const boundaryWorkflow = read('.github/workflows/vendor-country-boundaries.yml');
 const playwrightConfig = read('playwright.config.js');
+const discoveryVerifier = read('tools/verify-test-discovery.js');
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
 const contentVersion = persistence.match(/CONTENT_VERSION='([^']+)'/)?.[1];
@@ -39,6 +40,7 @@ check('Release-readiness dashboard exists', exists('tools/release-readiness.html
 check('Browser smoke workflow exists', exists('.github/workflows/browser-smoke-tests.yml'));
 check('Country-boundary vendor workflow exists', exists('.github/workflows/vendor-country-boundaries.yml'));
 check('Package-lock generation workflow exists', exists('.github/workflows/generate-package-lock.yml'));
+check('Test-discovery verifier exists', exists('tools/verify-test-discovery.js'));
 check('Package lock is committed', exists('package-lock.json'));
 
 const localScriptSources = [...index.matchAll(/<script\s+[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi)]
@@ -57,6 +59,7 @@ const syntaxTargets = [...new Set([
   ...localScriptSources,
   'playwright.config.js',
   'tools/release-preflight.js',
+  'tools/verify-test-discovery.js',
   ...fs.readdirSync(path.join(root, 'tests')).filter(file => file.endsWith('.js')).map(file => `tests/${file}`)
 ])].filter(exists);
 const syntaxFailures = [];
@@ -91,23 +94,29 @@ check('Playwright retains trace, screenshot, and video on failure', playwrightCo
 check('Playwright emits GitHub annotations', playwrightConfig.includes("['github']"));
 check('Playwright emits an HTML report', playwrightConfig.includes("['html', { open: 'never' }]"));
 check('Playwright emits machine-readable JSON results', playwrightConfig.includes("['json', { outputFile: 'test-results/results.json' }]"));
+check('Discovery verifier parses Playwright totals', discoveryVerifier.includes('/Total:\\s+(\\d+)\\s+tests?\\s+in\\s+(\\d+)\\s+files?/gi'));
+check('Discovery verifier enforces a minimum test count', discoveryVerifier.includes("MIN_DISCOVERED_TESTS || '10'"));
+check('Discovery verifier enforces a minimum file count', discoveryVerifier.includes("MIN_DISCOVERED_FILES || '4'"));
 check('Browser workflow uses Node 22', /node-version:\s*22\b/.test(workflow));
 check('Browser workflow always uses npm ci', /run:\s*npm ci --no-audit --no-fund\b/.test(workflow));
 check('Browser workflow enables npm cache', /cache:\s*npm\b/.test(workflow));
 check('Browser workflow has no unlocked install fallback', !workflow.includes('package-lock.json is missing') && !/npm install --no-audit/.test(workflow));
 check('Browser workflow runs release preflight explicitly', workflow.includes('npm run preflight 2>&1 | tee test-results/preflight.log'));
 check('Browser workflow discovers tests before browser installation', workflow.includes('npx playwright test --list 2>&1 | tee test-results/discovery.log'));
+check('Browser workflow verifies discovered coverage', workflow.includes('node tools/verify-test-discovery.js test-results/discovery.log'));
 check('Browser workflow runs browser-only tests', workflow.includes('npm run test:browser 2>&1 | tee test-results/browser.log'));
 check('Browser workflow preserves piped command failures', (workflow.match(/set -o pipefail/g) || []).length >= 3);
-check('Browser workflow writes a run summary', workflow.includes('$GITHUB_STEP_SUMMARY') && workflow.includes('steps.preflight.outcome') && workflow.includes('steps.discovery.outcome') && workflow.includes('steps.browser.outcome'));
+check('Browser workflow writes a run summary', workflow.includes('$GITHUB_STEP_SUMMARY') && workflow.includes('steps.preflight.outcome') && workflow.includes('steps.discovery.outcome') && workflow.includes('steps.discovery_count.outputs.summary') && workflow.includes('steps.browser.outcome'));
 check('Browser workflow uploads release evidence on every outcome', /name:\s*Upload release verification evidence[\s\S]*if:\s*always\(\)[\s\S]*test-results\/[\s\S]*playwright-report\//.test(workflow));
 check('Release evidence is retained for 14 days', /retention-days:\s*14\b/.test(workflow));
 const workflowPreflightPosition = workflow.indexOf('npm run preflight 2>&1 | tee test-results/preflight.log');
 const workflowDiscoveryPosition = workflow.indexOf('npx playwright test --list 2>&1 | tee test-results/discovery.log');
+const workflowDiscoveryVerificationPosition = workflow.indexOf('node tools/verify-test-discovery.js test-results/discovery.log');
 const workflowChromiumPosition = workflow.indexOf('run: npx playwright install --with-deps chromium');
 const workflowBrowserPosition = workflow.indexOf('npm run test:browser 2>&1 | tee test-results/browser.log');
 check('Test discovery runs after release preflight', workflowDiscoveryPosition > workflowPreflightPosition, `${workflowPreflightPosition} / ${workflowDiscoveryPosition}`);
-check('Browser workflow fails fast before Chromium installation', workflowPreflightPosition >= 0 && workflowDiscoveryPosition > workflowPreflightPosition && workflowChromiumPosition > workflowDiscoveryPosition, `${workflowPreflightPosition} / ${workflowDiscoveryPosition} / ${workflowChromiumPosition}`);
+check('Discovery coverage is verified before Chromium installation', workflowDiscoveryVerificationPosition > workflowDiscoveryPosition && workflowChromiumPosition > workflowDiscoveryVerificationPosition, `${workflowDiscoveryPosition} / ${workflowDiscoveryVerificationPosition} / ${workflowChromiumPosition}`);
+check('Browser workflow fails fast before Chromium installation', workflowPreflightPosition >= 0 && workflowDiscoveryPosition > workflowPreflightPosition && workflowDiscoveryVerificationPosition > workflowDiscoveryPosition && workflowChromiumPosition > workflowDiscoveryVerificationPosition, `${workflowPreflightPosition} / ${workflowDiscoveryPosition} / ${workflowDiscoveryVerificationPosition} / ${workflowChromiumPosition}`);
 check('Browser tests run after Chromium installation', workflowBrowserPosition > workflowChromiumPosition, `${workflowChromiumPosition} / ${workflowBrowserPosition}`);
 check('Lock workflow checks out main explicitly', /ref:\s*main\b/.test(lockWorkflow));
 check('Lock workflow runs automatically for package changes', /push:[\s\S]*branches:\s*\[main\][\s\S]*package\.json/.test(lockWorkflow));
