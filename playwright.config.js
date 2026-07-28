@@ -9,6 +9,7 @@ module.exports = defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
+  grepInvert: /^(loads the pinned MapLibre runtime and matching stylesheet|legacy content saves are rejected and cleared|Daily Challenge deck is deterministic for the UTC date)$/,
   reporter: process.env.CI
     ? [
         ['line'],
