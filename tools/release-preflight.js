@@ -23,6 +23,7 @@ const lockWorkflow = read('.github/workflows/generate-package-lock.yml');
 const boundaryWorkflow = read('.github/workflows/vendor-country-boundaries.yml');
 const playwrightConfig = read('playwright.config.js');
 const discoveryVerifier = read('tools/verify-test-discovery.js');
+const dependabot = read('.github/dependabot.yml');
 const allWorkflows = [workflow, lockWorkflow, boundaryWorkflow];
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
@@ -41,8 +42,15 @@ check('Release-readiness dashboard exists', exists('tools/release-readiness.html
 check('Browser smoke workflow exists', exists('.github/workflows/browser-smoke-tests.yml'));
 check('Country-boundary vendor workflow exists', exists('.github/workflows/vendor-country-boundaries.yml'));
 check('Package-lock generation workflow exists', exists('.github/workflows/generate-package-lock.yml'));
+check('Dependabot configuration exists', exists('.github/dependabot.yml'));
 check('Test-discovery verifier exists', exists('tools/verify-test-discovery.js'));
 check('Package lock is committed', exists('package-lock.json'));
+
+check('Dependabot monitors npm dependencies', /package-ecosystem:\s*npm\b/.test(dependabot));
+check('Dependabot monitors GitHub Actions', /package-ecosystem:\s*github-actions\b/.test(dependabot));
+check('Dependabot updates are weekly', (dependabot.match(/interval:\s*weekly\b/g) || []).length === 2);
+check('Dependabot limits open dependency PRs', (dependabot.match(/open-pull-requests-limit:\s*5\b/g) || []).length === 2);
+check('Dependabot uses dependency labels', (dependabot.match(/^\s*- dependencies\s*$/gm) || []).length === 2);
 
 const localScriptSources = [...index.matchAll(/<script\s+[^>]*src=["']([^"']+)["'][^>]*><\/script>/gi)]
   .map(match => match[1])
