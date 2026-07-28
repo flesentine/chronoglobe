@@ -21,9 +21,13 @@ const workflow = read('.github/workflows/browser-smoke-tests.yml');
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
 const contentVersion = persistence.match(/CONTENT_VERSION='([^']+)'/)?.[1];
+const playwrightVersion = pkg.devDependencies?.['@playwright/test'];
+const exactVersion = value => typeof value === 'string' && /^\d+\.\d+\.\d+$/.test(value);
 
 check('Package and runtime app versions match', appVersion === pkg.version, `${pkg.version} / ${appVersion || 'missing'}`);
 check('Canonical content version is active', contentVersion === 'canonical-150-expert-v1', contentVersion || 'missing');
+check('Node release line is pinned', pkg.engines?.node === '22.x', pkg.engines?.node || 'missing');
+check('Playwright is pinned to an exact version', exactVersion(playwrightVersion), playwrightVersion || 'missing');
 check('Canonical Expert content exists', exists('facts/expert-content.js'));
 check('Deleted Expert override loader is absent', !exists('facts/expert-overrides.js'));
 check('Canonical validation exists', exists('facts/canonical-validation.js'));
@@ -49,6 +53,7 @@ check('Production page does not load deleted Expert overrides', !index.includes(
 check('Readiness dashboard checks app version', readiness.includes(`APP_VERSION==='${pkg.version}'`), pkg.version);
 check('Readiness dashboard checks content version', readiness.includes(`CONTENT_VERSION==='${contentVersion}'`), contentVersion || 'missing');
 check('Default test command runs preflight first', pkg.scripts?.test === 'npm run preflight && playwright test');
+check('Browser workflow uses Node 22', /node-version:\s*22\b/.test(workflow));
 check('Browser workflow runs the package test command', /run:\s*npm test\b/.test(workflow));
 
 const failures = checks.filter(item => !item.passed);
