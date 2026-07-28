@@ -10,11 +10,19 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: vendor-country-boundaries
+  cancel-in-progress: false
+
 jobs:
   vendor:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Download Natural Earth 1:110m countries
         run: |
@@ -25,7 +33,7 @@ jobs:
 
       - name: Validate GeoJSON
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           import json
           from pathlib import Path
 
@@ -40,7 +48,7 @@ jobs:
 
       - name: Commit vendored asset
         run: |
-          if git diff --quiet -- data/country-boundaries.geojson; then
+          if [ -z "$(git status --porcelain -- data/country-boundaries.geojson)" ]; then
             echo 'Country boundary asset is already current.'
             exit 0
           fi
@@ -48,4 +56,4 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/country-boundaries.geojson
           git commit -m 'Vendor Natural Earth country boundaries'
-          git push
+          git push origin HEAD:main
