@@ -15,13 +15,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Check out repository
+      - name: Check out main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Show tool versions
+        run: |
+          node --version
+          npm --version
 
       - name: Generate package-lock.json
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
@@ -41,7 +48,7 @@ jobs:
 
       - name: Commit package lock
         run: |
-          if git diff --quiet -- package-lock.json; then
+          if [ -z "$(git status --porcelain -- package-lock.json)" ]; then
             echo 'package-lock.json is already current.'
             exit 0
           fi
@@ -49,4 +56,4 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add package-lock.json
           git commit -m 'Lock release test dependencies'
-          git push
+          git push origin HEAD:main
