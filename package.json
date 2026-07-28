@@ -9,7 +9,8 @@
   "scripts": {
     "serve": "python3 -m http.server 4173",
     "preflight": "node tools/release-preflight.js",
-    "test": "npm run preflight && playwright test",
+    "test": "npm run preflight && npm run test:browser",
+    "test:browser": "playwright test",
     "test:smoke": "npm run preflight && playwright test tests/smoke.spec.js",
     "test:mobile": "npm run preflight && playwright test tests/mobile-layout.spec.js",
     "test:diagnostics": "npm run preflight && playwright test tests/diagnostics.spec.js"
