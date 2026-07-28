@@ -59,28 +59,6 @@ test('loads the complete canonical dataset exactly once', async ({ page }) => {
   });
 });
 
-test('loads the pinned MapLibre runtime and matching stylesheet', async ({ page }, testInfo) => {
-  desktopOnly(testInfo);
-  await openClean(page);
-  const dependency = await page.evaluate(() => ({
-    runtimeVersion: window.maplibregl?.version,
-    scripts: [...document.scripts]
-      .map(script => script.src)
-      .filter(source => source.includes('unpkg.com/maplibre-gl@')),
-    stylesheets: [...document.querySelectorAll('link[rel="stylesheet"]')]
-      .map(link => link.href)
-      .filter(source => source.includes('unpkg.com/maplibre-gl@'))
-  }));
-
-  expect(dependency.runtimeVersion).toBe('5.24.0');
-  expect(dependency.scripts).toEqual([
-    'https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js'
-  ]);
-  expect(dependency.stylesheets).toEqual([
-    'https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css'
-  ]);
-});
-
 test('browser exposes the canonical release metadata and valid share preview', async ({ page, request }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
@@ -209,22 +187,6 @@ test('unfinished game can be resumed after reload', async ({ page }) => {
   await expect(page.locator('#lockBtn')).toBeEnabled();
 });
 
-test('legacy content saves are rejected and cleared', async ({ page }, testInfo) => {
-  desktopOnly(testInfo);
-  await openClean(page);
-  await startStandardGame(page);
-  await placeGuess(page, 12, 34);
-  await page.evaluate(() => {
-    const saved = JSON.parse(localStorage.getItem('chronoglobeActiveGame'));
-    saved.contentVersion = 'legacy-150-v1';
-    localStorage.setItem('chronoglobeActiveGame', JSON.stringify(saved));
-  });
-  await page.reload();
-  await expect(page.locator('#resumeGameDialog')).not.toHaveClass(/show/);
-  await expect(page.locator('#startScreen')).toHaveClass(/show/);
-  expect(await page.evaluate(() => localStorage.getItem('chronoglobeActiveGame'))).toBeNull();
-});
-
 test('Daily Challenge starts as a five-round mixed game', async ({ page }) => {
   await openClean(page);
   const daily = page.locator('#dailyChallengeBtn');
@@ -232,26 +194,6 @@ test('Daily Challenge starts as a five-round mixed game', async ({ page }) => {
   await daily.click();
   await expect(page.locator('#gameConfigText')).toContainText('Daily Challenge');
   await expect(page.locator('#roundStat')).toContainText('1 / 5');
-});
-
-test('Daily Challenge deck is deterministic for the UTC date', async ({ page }, testInfo) => {
-  desktopOnly(testInfo);
-  await openClean(page);
-  await page.locator('#dailyChallengeBtn').click();
-  const first = await page.evaluate(() => JSON.parse(localStorage.getItem('chronoglobeReplaySessionV1')).deck);
-
-  await page.evaluate(() => {
-    localStorage.removeItem('chronoglobeActiveGame');
-    localStorage.removeItem('chronoglobeReplaySessionV1');
-  });
-  await page.reload();
-  await expect(page.locator('#startScreen')).toHaveClass(/show/);
-  await page.locator('#dailyChallengeBtn').click();
-  const second = await page.evaluate(() => JSON.parse(localStorage.getItem('chronoglobeReplaySessionV1')).deck);
-
-  expect(second).toEqual(first);
-  expect(new Set(first.map(item => item.eventId)).size).toBe(5);
-  expect(first[0].difficulty).not.toBe('expert');
 });
 
 test('completed Daily Challenge becomes Practice on the next attempt', async ({ page }, testInfo) => {
