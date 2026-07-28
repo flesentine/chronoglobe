@@ -37,6 +37,7 @@ check('Release-readiness dashboard exists', exists('tools/release-readiness.html
 check('Browser smoke workflow exists', exists('.github/workflows/browser-smoke-tests.yml'));
 check('Country-boundary vendor workflow exists', exists('.github/workflows/vendor-country-boundaries.yml'));
 check('Package-lock generation workflow exists', exists('.github/workflows/generate-package-lock.yml'));
+check('Package lock is committed', exists('package-lock.json'));
 
 const expectedOrder = [
   'facts/seeds-1.js',
@@ -58,8 +59,9 @@ check('Readiness dashboard checks content version', readiness.includes(`CONTENT_
 check('Default test command runs preflight first', pkg.scripts?.test === 'npm run preflight && playwright test');
 check('Browser workflow uses Node 22', /node-version:\s*22\b/.test(workflow));
 check('Browser workflow runs the package test command', /run:\s*npm test\b/.test(workflow));
-check('Browser workflow uses npm ci when locked', /run:\s*npm ci\b/.test(workflow));
-check('Browser workflow has an explicit no-lock fallback', workflow.includes('package-lock.json is missing'));
+check('Browser workflow always uses npm ci', /run:\s*npm ci --no-audit --no-fund\b/.test(workflow));
+check('Browser workflow enables npm cache', /cache:\s*npm\b/.test(workflow));
+check('Browser workflow has no unlocked install fallback', !workflow.includes('package-lock.json is missing') && !/npm install --no-audit/.test(workflow));
 check('Lock workflow checks out main explicitly', /ref:\s*main\b/.test(lockWorkflow));
 check('Lock workflow runs automatically for package changes', /push:[\s\S]*branches:\s*\[main\][\s\S]*package\.json/.test(lockWorkflow));
 check('Lock workflow runs automatically when repaired', lockWorkflow.includes("'.github/workflows/generate-package-lock.yml'"));
@@ -86,9 +88,9 @@ if (exists('data/country-boundaries.geojson')) {
 if (exists('package-lock.json')) {
   const lock = JSON.parse(read('package-lock.json'));
   const lockedPlaywright = lock.packages?.['node_modules/@playwright/test']?.version;
+  check('Package lock format is current', lock.lockfileVersion === 3, `lockfileVersion ${lock.lockfileVersion || 'missing'}`);
+  check('Package lock matches app version', lock.version === pkg.version && lock.packages?.['']?.version === pkg.version, `${pkg.version} / ${lock.version || 'missing'}`);
   check('Package lock matches pinned Playwright', lockedPlaywright === playwrightVersion, `${playwrightVersion} / ${lockedPlaywright || 'missing'}`);
-} else {
-  console.warn('WARN: package-lock.json is not committed yet. The automatic Generate package lock workflow should create it from package.json.');
 }
 
 const failures = checks.filter(item => !item.passed);
