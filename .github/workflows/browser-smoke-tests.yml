@@ -38,22 +38,53 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Prepare evidence directory
+        run: mkdir -p test-results
+
       - name: Run release preflight
-        run: npm run preflight
+        id: preflight
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run preflight 2>&1 | tee test-results/preflight.log
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Run browser tests
-        run: npm run test:browser
+        id: browser
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:browser 2>&1 | tee test-results/browser.log
 
-      - name: Upload Playwright report
+      - name: Write release verification summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## ChronoGlobe release verification'
+            echo
+            echo '| Item | Value |'
+            echo '| --- | --- |'
+            echo "| Commit | \`${GITHUB_SHA}\` |"
+            echo "| Trigger | \`${GITHUB_EVENT_NAME}\` |"
+            echo "| Node | \`$(node --version)\` |"
+            echo "| npm | \`$(npm --version)\` |"
+            echo "| Playwright | \`$(node -p \"require('./package-lock.json').packages['node_modules/@playwright/test'].version\")\` |"
+            echo "| Preflight | \`${{ steps.preflight.outcome }}\` |"
+            echo "| Browser tests | \`${{ steps.browser.outcome }}\` |"
+            echo
+            echo 'Full logs and the Playwright report are attached to this workflow run.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload release verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ github.run_attempt }}
+          name: release-verification-${{ github.run_attempt }}
           path: |
-            playwright-report/
             test-results/
-          if-no-files-found: ignore
-          retention-days: 7
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
