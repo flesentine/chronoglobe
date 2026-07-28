@@ -11,7 +11,7 @@
 </head>
 <body><main class="wrap">
   <h1>ChronoGlobe release readiness</h1>
-  <p class="lede">One consolidated gate for the production dataset, editorial content, persistence contract, script loading, and bundled map assets.</p>
+  <p class="lede">One consolidated gate for the production dataset, editorial content, persistence contract, dependency lock, script loading, and bundled map assets.</p>
   <div id="summary" class="grid"></div>
   <section class="panel"><h2>Checks</h2><div id="checks"></div></section>
 </main>
@@ -42,22 +42,25 @@
   add('Scoring and deck services',typeof window.ChronoDeck?.buildRoundDeck==='function'&&typeof window.ChronoScoring?.roundResult==='function','Required runtime services must be available');
   add('No obsolete Expert loader',[...document.scripts].every(script=>!script.src.endsWith('/expert-overrides.js')),'Deleted compatibility script must not load');
 
-  let boundaryDetail='Bundled GeoJSON could not be loaded';
-  let boundaryValid=false;
+  let lock=null;
+  try{
+    const response=await fetch('../package-lock.json',{cache:'no-store'});
+    if(response.ok) lock=await response.json();
+  }catch{}
+  const rootLock=lock?.packages?.[''];
+  const lockedPlaywright=lock?.packages?.['node_modules/@playwright/test']?.version;
+  add('Dependency lock committed',Boolean(lock),'package-lock.json must be available to the deployed release diagnostics');
+  add('Dependency lock format',lock?.lockfileVersion===3,lock?`lockfileVersion ${lock.lockfileVersion??'missing'}`:'Lockfile unavailable');
+  add('Dependency lock matches app',lock?.version==='1.9.0'&&rootLock?.version==='1.9.0',lock?`Root ${lock.version||'missing'} · package ${rootLock?.version||'missing'}`:'Lockfile unavailable');
+  add('Playwright release dependency',rootLock?.devDependencies?.['@playwright/test']==='1.55.0'&&lockedPlaywright==='1.55.0',lock?`Declared ${rootLock?.devDependencies?.['@playwright/test']||'missing'} · locked ${lockedPlaywright||'missing'}`:'Lockfile unavailable');
+
+  let boundaries=null;
   try{
     const response=await fetch('../data/country-boundaries.geojson',{cache:'no-store'});
-    if(response.ok){
-      const data=await response.json();
-      const featureCount=Array.isArray(data.features)?data.features.length:0;
-      boundaryValid=data.type==='FeatureCollection'&&featureCount>=170;
-      boundaryDetail=boundaryValid?`Bundled FeatureCollection contains ${featureCount} country features`:`Invalid bundled GeoJSON: ${data.type||'missing type'}, ${featureCount} features`;
-    }else{
-      boundaryDetail=`Bundled GeoJSON returned HTTP ${response.status}`;
-    }
-  }catch(error){
-    boundaryDetail=`Bundled GeoJSON failed to load: ${error?.message||'unknown error'}`;
-  }
-  add('Bundled country boundaries',boundaryValid,boundaryDetail);
+    if(response.ok) boundaries=await response.json();
+  }catch{}
+  const boundaryFeatures=Array.isArray(boundaries?.features)?boundaries.features:[];
+  add('Bundled country boundaries',boundaries?.type==='FeatureCollection'&&boundaryFeatures.length>=170,boundaries?`${boundaries.type||'missing'} with ${boundaryFeatures.length} features`:'Required vendored GeoJSON is missing or unreadable');
 
   const blockers=checks.filter(check=>check.severity==='blocker'&&!check.ok).length;
   const warnings=checks.filter(check=>check.severity==='warning'&&!check.ok).length;
