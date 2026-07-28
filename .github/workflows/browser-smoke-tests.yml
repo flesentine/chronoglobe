@@ -48,6 +48,13 @@ jobs:
           set -o pipefail
           npm run preflight 2>&1 | tee test-results/preflight.log
 
+      - name: Discover browser tests
+        id: discovery
+        shell: bash
+        run: |
+          set -o pipefail
+          npx playwright test --list 2>&1 | tee test-results/discovery.log
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
@@ -73,6 +80,7 @@ jobs:
             echo "| npm | \`$(npm --version)\` |"
             echo "| Playwright | \`$(node -p \"require('./package-lock.json').packages['node_modules/@playwright/test'].version\")\` |"
             echo "| Preflight | \`${{ steps.preflight.outcome }}\` |"
+            echo "| Test discovery | \`${{ steps.discovery.outcome }}\` |"
             echo "| Browser tests | \`${{ steps.browser.outcome }}\` |"
             echo
             echo 'Full logs and the Playwright report are attached to this workflow run.'
