@@ -38,11 +38,14 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Run release preflight
+        run: npm run preflight
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Run browser tests
-        run: npm test
+        run: npm run test:browser
 
       - name: Upload Playwright report
         if: always()
