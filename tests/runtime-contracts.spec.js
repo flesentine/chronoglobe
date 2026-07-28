@@ -11,6 +11,13 @@ async function openClean(page) {
   await expect(page.locator('#startScreen')).toHaveClass(/show/);
 }
 
+async function startReadyGame(page) {
+  await page.locator('#startGameBtn').click();
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#roundStat')).toContainText('1 / 5');
+  await expect(page.locator('#factText')).not.toHaveText('Choose a game to begin.');
+}
+
 test('pinned MapLibre assets load and expose the map constructor', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
@@ -37,8 +44,7 @@ test('pinned MapLibre assets load and expose the map constructor', async ({ page
 test('legacy content saves are rejected before application startup', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
-  await page.locator('#startGameBtn').click();
-  await expect(page.locator('#roundStat')).toContainText('1 / 5');
+  await startReadyGame(page);
   await page.evaluate(() => window.placeGuess(12, 34));
   await expect(page.locator('#lockBtn')).toBeEnabled();
 
