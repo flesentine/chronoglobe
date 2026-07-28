@@ -44,18 +44,29 @@ npm run serve
 
 Then open `http://127.0.0.1:4173`.
 
-## Browser tests
+## Release preflight and browser tests
+
+Run the fast repository consistency checks without opening a browser:
+
+```bash
+npm run preflight
+```
+
+The preflight verifies version alignment, canonical script order, required workflows and diagnostics, deleted-loader absence, and single replayability loading.
+
+Install Chromium and run the full suite:
 
 ```bash
 npx playwright install chromium
 npm test
 ```
 
-Focused commands:
+`npm test` runs the release preflight first, then Playwright. Focused commands:
 
 ```bash
 npm run test:smoke
 npm run test:mobile
+npm run test:diagnostics
 ```
 
 ## Release diagnostics
