@@ -1,4 +1,5 @@
 name: Browser smoke tests
+# Registered manually through GitHub
 
 on:
   push:
