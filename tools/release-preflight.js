@@ -18,6 +18,7 @@ const persistence = read('persistence.js');
 const index = read('index.html');
 const readiness = read('tools/release-readiness.html');
 const workflow = read('.github/workflows/browser-smoke-tests.yml');
+const lockWorkflow = read('.github/workflows/generate-package-lock.yml');
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
 const contentVersion = persistence.match(/CONTENT_VERSION='([^']+)'/)?.[1];
@@ -34,6 +35,7 @@ check('Canonical validation exists', exists('facts/canonical-validation.js'));
 check('Release-readiness dashboard exists', exists('tools/release-readiness.html'));
 check('Browser smoke workflow exists', exists('.github/workflows/browser-smoke-tests.yml'));
 check('Country-boundary vendor workflow exists', exists('.github/workflows/vendor-country-boundaries.yml'));
+check('Package-lock generation workflow exists', exists('.github/workflows/generate-package-lock.yml'));
 
 const expectedOrder = [
   'facts/seeds-1.js',
@@ -55,6 +57,18 @@ check('Readiness dashboard checks content version', readiness.includes(`CONTENT_
 check('Default test command runs preflight first', pkg.scripts?.test === 'npm run preflight && playwright test');
 check('Browser workflow uses Node 22', /node-version:\s*22\b/.test(workflow));
 check('Browser workflow runs the package test command', /run:\s*npm test\b/.test(workflow));
+check('Browser workflow uses npm ci when locked', /run:\s*npm ci\b/.test(workflow));
+check('Browser workflow has an explicit no-lock fallback', workflow.includes('package-lock.json is missing'));
+check('Lock workflow generates package-lock only', /npm install --package-lock-only\b/.test(lockWorkflow));
+check('Lock workflow verifies the Playwright version', lockWorkflow.includes("node_modules/@playwright/test"));
+
+if (exists('package-lock.json')) {
+  const lock = JSON.parse(read('package-lock.json'));
+  const lockedPlaywright = lock.packages?.['node_modules/@playwright/test']?.version;
+  check('Package lock matches pinned Playwright', lockedPlaywright === playwrightVersion, `${playwrightVersion} / ${lockedPlaywright || 'missing'}`);
+} else {
+  console.warn('WARN: package-lock.json is not committed yet. Run the Generate package lock workflow before final release verification.');
+}
 
 const failures = checks.filter(item => !item.passed);
 for (const item of checks) {
