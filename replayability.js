@@ -128,11 +128,17 @@
     if(saved?.deck){session={type:'standard',deck:saved.deck};currentDeck=saved.deck;resultGlyphs=glyphsFromResults(saved.roundResults||[])}
   }
 
+  function isFinalAdvance(event){
+    const button=document.getElementById('nextBtn');
+    if(!button||button.hidden||button.disabled||!button.textContent.includes('final score'))return false;
+    if(event.type==='click')return Boolean(event.target?.closest?.('#nextBtn'));
+    return event.type==='keydown'&&(event.key===' '||event.key==='ArrowRight');
+  }
+
   function captureFinalPayload(event){
-    const button=event.target?.closest?.('#nextBtn');
-    if(!button||button.hidden||!button.textContent.includes('final score'))return;
+    if(!isFinalAdvance(event)||finalPayload)return;
     const saved=readActiveSave();
-    if(!saved)return;
+    if(!saved||saved.phase!=='result'||saved.round!==saved.config?.totalRounds)return;
     currentDeck=Array.isArray(saved.deck)?saved.deck:currentDeck;
     resultGlyphs=glyphsFromResults(saved.roundResults||[]);
     finalPayload=Object.freeze({
@@ -150,6 +156,7 @@
 
   function watchResults(){
     document.addEventListener('click',captureFinalPayload,true);
+    document.addEventListener('keydown',captureFinalPayload,true);
     const scoreDock=document.getElementById('scoreDock');
     const endScreen=document.getElementById('endScreen');
     if(scoreDock)new MutationObserver(()=>{
