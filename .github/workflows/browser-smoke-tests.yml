@@ -76,20 +76,23 @@ jobs:
         if: always()
         shell: bash
         run: |
+          node_version="$(node --version)"
+          npm_version="$(npm --version)"
+          playwright_version="$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
           {
             echo '## ChronoGlobe release verification'
             echo
             echo '| Item | Value |'
             echo '| --- | --- |'
-            echo "| Commit | \`${GITHUB_SHA}\` |"
-            echo "| Trigger | \`${GITHUB_EVENT_NAME}\` |"
-            echo "| Node | \`$(node --version)\` |"
-            echo "| npm | \`$(npm --version)\` |"
-            echo "| Playwright | \`$(node -p \"require('./package-lock.json').packages['node_modules/@playwright/test'].version\")\` |"
-            echo "| Preflight | \`${{ steps.preflight.outcome }}\` |"
-            echo "| Test discovery | \`${{ steps.discovery.outcome }}\` |"
-            echo "| Discovered coverage | \`${{ steps.discovery_count.outputs.summary || 'unavailable' }}\` |"
-            echo "| Browser tests | \`${{ steps.browser.outcome }}\` |"
+            printf '| Commit | `%s` |\n' "$GITHUB_SHA"
+            printf '| Trigger | `%s` |\n' "$GITHUB_EVENT_NAME"
+            printf '| Node | `%s` |\n' "$node_version"
+            printf '| npm | `%s` |\n' "$npm_version"
+            printf '| Playwright | `%s` |\n' "$playwright_version"
+            echo '| Preflight | `${{ steps.preflight.outcome }}` |'
+            echo '| Test discovery | `${{ steps.discovery.outcome }}` |'
+            echo '| Discovered coverage | `${{ steps.discovery_count.outputs.summary || 'unavailable' }}` |'
+            echo '| Browser tests | `${{ steps.browser.outcome }}` |'
             echo
             echo 'Full logs and the Playwright report are attached to this workflow run.'
           } >> "$GITHUB_STEP_SUMMARY"
