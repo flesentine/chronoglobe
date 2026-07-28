@@ -74,7 +74,7 @@ test('replayability diagnostic seeds Daily from the canonical content version', 
   expect(errors).toEqual([]);
 });
 
-test('release readiness requires valid bundled country boundaries', async ({ page }, testInfo) => {
+test('release readiness has no hard blockers', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   const errors = await openDiagnostic(page, '/tools/release-readiness.html');
   await expect(page.locator('#summary')).toContainText('READY');
@@ -86,10 +86,16 @@ test('release readiness requires valid bundled country boundaries', async ({ pag
   expect(report.blockers).toBe(0);
   expect(report.warnings).toBe(0);
   expect(report.checks.filter(check => check.severity === 'blocker').every(check => check.ok)).toBe(true);
-  const boundaries = report.checks.find(check => check.name === 'Bundled country boundaries');
-  expect(boundaries).toBeTruthy();
-  expect(boundaries.severity).toBe('blocker');
-  expect(boundaries.ok).toBe(true);
-  expect(boundaries.detail).toMatch(/Bundled FeatureCollection contains \d+ country features/);
+
+  const checks = Object.fromEntries(report.checks.map(check => [check.name, check]));
+  expect(checks['Dependency lock committed']).toMatchObject({ ok: true, severity: 'blocker' });
+  expect(checks['Dependency lock format']).toMatchObject({ ok: true, severity: 'blocker' });
+  expect(checks['Dependency lock format'].detail).toContain('lockfileVersion 3');
+  expect(checks['Dependency lock matches app']).toMatchObject({ ok: true, severity: 'blocker' });
+  expect(checks['Dependency lock matches app'].detail).toContain('Root 1.9.0');
+  expect(checks['Playwright release dependency']).toMatchObject({ ok: true, severity: 'blocker' });
+  expect(checks['Playwright release dependency'].detail).toContain('locked 1.55.0');
+  expect(checks['Bundled country boundaries']).toMatchObject({ ok: true, severity: 'blocker' });
+  expect(checks['Bundled country boundaries'].detail).toContain('FeatureCollection');
   expect(errors).toEqual([]);
 });
