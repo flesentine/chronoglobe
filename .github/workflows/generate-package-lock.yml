@@ -2,6 +2,11 @@ name: Generate package lock
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - '.github/workflows/generate-package-lock.yml'
 
 permissions:
   contents: write
