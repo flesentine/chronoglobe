@@ -24,6 +24,7 @@ const boundaryWorkflow = read('.github/workflows/vendor-country-boundaries.yml')
 const playwrightConfig = read('playwright.config.js');
 const discoveryVerifier = read('tools/verify-test-discovery.js');
 const dependabot = read('.github/dependabot.yml');
+const gitignore = read('.gitignore');
 const allWorkflows = [workflow, lockWorkflow, boundaryWorkflow];
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
@@ -43,8 +44,14 @@ check('Browser smoke workflow exists', exists('.github/workflows/browser-smoke-t
 check('Country-boundary vendor workflow exists', exists('.github/workflows/vendor-country-boundaries.yml'));
 check('Package-lock generation workflow exists', exists('.github/workflows/generate-package-lock.yml'));
 check('Dependabot configuration exists', exists('.github/dependabot.yml'));
+check('Repository ignore rules exist', exists('.gitignore'));
 check('Test-discovery verifier exists', exists('tools/verify-test-discovery.js'));
 check('Package lock is committed', exists('package-lock.json'));
+
+const requiredIgnoreRules = ['node_modules/', 'playwright-report/', 'test-results/', '.DS_Store'];
+const missingIgnoreRules = requiredIgnoreRules.filter(rule => !gitignore.split(/\r?\n/).includes(rule));
+check('Generated dependencies and test evidence are ignored', missingIgnoreRules.length === 0, missingIgnoreRules.join(', '));
+check('Package lock remains tracked', !gitignore.split(/\r?\n/).includes('package-lock.json'));
 
 check('Dependabot monitors npm dependencies', /package-ecosystem:\s*npm\b/.test(dependabot));
 check('Dependabot monitors GitHub Actions', /package-ecosystem:\s*github-actions\b/.test(dependabot));
