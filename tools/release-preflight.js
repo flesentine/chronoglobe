@@ -23,6 +23,7 @@ const lockWorkflow = read('.github/workflows/generate-package-lock.yml');
 const boundaryWorkflow = read('.github/workflows/vendor-country-boundaries.yml');
 const playwrightConfig = read('playwright.config.js');
 const discoveryVerifier = read('tools/verify-test-discovery.js');
+const allWorkflows = [workflow, lockWorkflow, boundaryWorkflow];
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
 const contentVersion = persistence.match(/CONTENT_VERSION='([^']+)'/)?.[1];
@@ -97,6 +98,16 @@ check('Playwright emits machine-readable JSON results', playwrightConfig.include
 check('Discovery verifier parses Playwright totals', discoveryVerifier.includes('/Total:\\s+(\\d+)\\s+tests?\\s+in\\s+(\\d+)\\s+files?/gi'));
 check('Discovery verifier enforces a minimum test count', discoveryVerifier.includes("MIN_DISCOVERED_TESTS || '10'"));
 check('Discovery verifier enforces a minimum file count', discoveryVerifier.includes("MIN_DISCOVERED_FILES || '4'"));
+
+const actionUses = allWorkflows.flatMap(text => [...text.matchAll(/^\s*uses:\s*([^\s#]+)(?:\s+#\s*(.+))?$/gm)].map(match => ({ reference: match[1], comment: match[2] || '' })));
+const unpinnedActions = actionUses.filter(item => !/@[0-9a-f]{40}$/i.test(item.reference));
+const uncommentedActions = actionUses.filter(item => !/^v\d+(?:\.\d+){0,2}$/.test(item.comment.trim()));
+check('All GitHub Actions use immutable commit SHAs', unpinnedActions.length === 0, unpinnedActions.map(item => item.reference).join(', '));
+check('Pinned GitHub Actions retain readable version comments', uncommentedActions.length === 0, uncommentedActions.map(item => item.reference).join(', '));
+check('Checkout is pinned to reviewed v4.3.1 commit', allWorkflows.every(text => !text.includes('actions/checkout@') || text.includes('actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1')));
+check('Setup Node is pinned to reviewed v4.4.0 commit', [workflow, lockWorkflow].every(text => text.includes('actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0')));
+check('Artifact upload is pinned to reviewed v4.6.2 commit', workflow.includes('actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2'));
+
 check('Browser workflow uses Node 22', /node-version:\s*22\b/.test(workflow));
 check('Browser workflow always uses npm ci', /run:\s*npm ci --no-audit --no-fund\b/.test(workflow));
 check('Browser workflow enables npm cache', /cache:\s*npm\b/.test(workflow));
