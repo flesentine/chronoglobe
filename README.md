@@ -13,6 +13,7 @@ Live site: https://flesentine.github.io/chronoglobe/
 - All 150 Expert clues and hints have completed editorial review
 - Canonical runtime with validated legacy fallback
 - Vendored Natural Earth country boundaries with a remote emergency fallback
+- Locked Node 22 / Playwright 1.55.0 release-test toolchain
 
 ## Features
 
@@ -39,11 +40,9 @@ Then open `http://localhost:8080`.
 For the same static-server setup used by Playwright:
 
 ```bash
-npm install
+npm ci
 npm run serve
 ```
-
-After `package-lock.json` has been generated and committed, use `npm ci` instead of `npm install` for a reproducible install.
 
 Then open `http://127.0.0.1:4173`.
 
@@ -55,7 +54,7 @@ Run the fast repository consistency checks without opening a browser:
 npm run preflight
 ```
 
-The preflight verifies version alignment, canonical script order, required workflows and diagnostics, deleted-loader absence, single replayability loading, the vendored boundary asset, and lockfile consistency when a lockfile exists.
+The preflight verifies version alignment, canonical script order, required workflows and diagnostics, deleted-loader absence, single replayability loading, the vendored boundary asset, and the committed dependency lock.
 
 Install Chromium and run the full suite:
 
@@ -81,7 +80,6 @@ npm run test:diagnostics
 - Persistence: https://flesentine.github.io/chronoglobe/tools/persistence-test.html
 - Replayability: https://flesentine.github.io/chronoglobe/tools/replayability-test.html
 
-## Remaining manual release steps
+## Remaining manual release step
 
-1. Run **Actions → Generate package lock → Run workflow**. It resolves the pinned dependency tree, validates the locked Playwright version, and commits `package-lock.json`. Browser CI automatically uses `npm ci` after that file exists.
-2. Run **Actions → Browser smoke tests → Run workflow** and confirm the Playwright suite passes. Connector-created commits have not produced visible status checks, so CI success has not yet been independently confirmed.
+Run **Actions → Browser smoke tests → Run workflow** and confirm the complete Playwright suite passes. Connector-created commits have not produced visible status checks, so CI success has not yet been independently confirmed.
