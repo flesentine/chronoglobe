@@ -12,6 +12,7 @@ Live site: https://flesentine.github.io/chronoglobe/
 - 600 playable variants: 150 each for Easy, Medium, Hard, and Expert
 - All 150 Expert clues and hints have completed editorial review
 - Canonical runtime with validated legacy fallback
+- Vendored Natural Earth country boundaries with a remote emergency fallback
 
 ## Features
 
@@ -54,7 +55,7 @@ Run the fast repository consistency checks without opening a browser:
 npm run preflight
 ```
 
-The preflight verifies version alignment, canonical script order, required workflows and diagnostics, deleted-loader absence, single replayability loading, and lockfile consistency when a lockfile exists.
+The preflight verifies version alignment, canonical script order, required workflows and diagnostics, deleted-loader absence, single replayability loading, the vendored boundary asset, and lockfile consistency when a lockfile exists.
 
 Install Chromium and run the full suite:
 
@@ -83,5 +84,4 @@ npm run test:diagnostics
 ## Remaining manual release steps
 
 1. Run **Actions → Generate package lock → Run workflow**. It resolves the pinned dependency tree, validates the locked Playwright version, and commits `package-lock.json`. Browser CI automatically uses `npm ci` after that file exists.
-2. Run **Actions → Vendor country boundaries → Run workflow** to commit `data/country-boundaries.geojson`. Gameplay already has a remote fallback, so this is a resilience improvement rather than a hard blocker.
-3. Run **Actions → Browser smoke tests → Run workflow** and confirm the Playwright suite passes. Connector-created commits have not produced visible status checks, so CI success has not yet been independently confirmed.
+2. Run **Actions → Browser smoke tests → Run workflow** and confirm the Playwright suite passes. Connector-created commits have not produced visible status checks, so CI success has not yet been independently confirmed.
