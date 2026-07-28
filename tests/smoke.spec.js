@@ -205,3 +205,35 @@ test('final results are captured before persistence is cleared', async ({ page }
   expect(captured.payload.roundResults).toHaveLength(5);
   expect(captured.payload.originalMaximum).toBe(50000);
 });
+
+test('keyboard completion captures final results before persistence is cleared', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await startStandardGame(page);
+  await page.evaluate(() => {
+    window.__finishedPayload = null;
+    window.addEventListener('chronoglobe:finished', event => { window.__finishedPayload = event.detail; }, { once: true });
+  });
+
+  for (let round = 1; round <= 5; round++) {
+    await placeGuess(page, round, -round);
+    await page.locator('#lockBtn').click();
+    await expect(page.locator('#scoreDock')).toHaveClass(/show/);
+    if (round < 5) {
+      await page.locator('#nextBtn').click();
+      await expect(page.locator('#roundStat')).toContainText(`${round + 1} / 5`);
+    } else {
+      await page.keyboard.press('ArrowRight');
+    }
+  }
+
+  await expect(page.locator('#endScreen')).toHaveClass(/show/);
+  const captured = await page.evaluate(() => ({
+    payload: window.__finishedPayload,
+    activeSave: localStorage.getItem('chronoglobeActiveGame')
+  }));
+  expect(captured.activeSave).toBeNull();
+  expect(captured.payload.deck).toHaveLength(5);
+  expect(captured.payload.roundResults).toHaveLength(5);
+  expect(captured.payload.originalMaximum).toBe(50000);
+});
