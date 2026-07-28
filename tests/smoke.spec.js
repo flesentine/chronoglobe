@@ -81,6 +81,64 @@ test('loads the pinned MapLibre runtime and matching stylesheet', async ({ page 
   ]);
 });
 
+test('browser exposes the canonical release metadata and valid share preview', async ({ page, request }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+
+  const metadata = await page.evaluate(() => {
+    const content = selector => document.querySelector(selector)?.getAttribute('content');
+    return {
+      title: document.title,
+      description: content('meta[name="description"]'),
+      canonical: document.querySelector('link[rel="canonical"]')?.href,
+      ogType: content('meta[property="og:type"]'),
+      ogUrl: content('meta[property="og:url"]'),
+      ogTitle: content('meta[property="og:title"]'),
+      ogDescription: content('meta[property="og:description"]'),
+      ogImage: content('meta[property="og:image"]'),
+      ogWidth: content('meta[property="og:image:width"]'),
+      ogHeight: content('meta[property="og:image:height"]'),
+      ogAlt: content('meta[property="og:image:alt"]'),
+      twitterCard: content('meta[name="twitter:card"]'),
+      twitterTitle: content('meta[name="twitter:title"]'),
+      twitterDescription: content('meta[name="twitter:description"]'),
+      twitterImage: content('meta[name="twitter:image"]')
+    };
+  });
+
+  const productionUrl = 'https://flesentine.github.io/chronoglobe/';
+  const previewUrl = `${productionUrl}assets/chronoglobe-social-preview.svg`;
+  const title = 'ChronoGlobe — Guess Where History Happened';
+  const description = 'Explore the globe, follow historical clues, and score points based on how close your guess is.';
+
+  expect(metadata).toEqual({
+    title,
+    description,
+    canonical: productionUrl,
+    ogType: 'website',
+    ogUrl: productionUrl,
+    ogTitle: title,
+    ogDescription: description,
+    ogImage: previewUrl,
+    ogWidth: '1200',
+    ogHeight: '630',
+    ogAlt: 'ChronoGlobe history guessing game preview',
+    twitterCard: 'summary_large_image',
+    twitterTitle: title,
+    twitterDescription: description,
+    twitterImage: previewUrl
+  });
+
+  const preview = await request.get('/assets/chronoglobe-social-preview.svg');
+  expect(preview.ok()).toBe(true);
+  expect(preview.headers()['content-type']).toContain('image/svg+xml');
+  const svg = await preview.text();
+  expect(svg).toContain('width="1200"');
+  expect(svg).toContain('height="630"');
+  expect(svg).toContain('viewBox="0 0 1200 630"');
+  expect(svg).toContain('ChronoGlobe');
+});
+
 test('production startup has no same-origin asset failures or page errors', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   const pageErrors = [];
