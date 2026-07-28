@@ -19,6 +19,7 @@ const index = read('index.html');
 const readiness = read('tools/release-readiness.html');
 const workflow = read('.github/workflows/browser-smoke-tests.yml');
 const lockWorkflow = read('.github/workflows/generate-package-lock.yml');
+const boundaryWorkflow = read('.github/workflows/vendor-country-boundaries.yml');
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
 const contentVersion = persistence.match(/CONTENT_VERSION='([^']+)'/)?.[1];
@@ -61,10 +62,15 @@ check('Browser workflow uses npm ci when locked', /run:\s*npm ci\b/.test(workflo
 check('Browser workflow has an explicit no-lock fallback', workflow.includes('package-lock.json is missing'));
 check('Lock workflow checks out main explicitly', /ref:\s*main\b/.test(lockWorkflow));
 check('Lock workflow generates package-lock only', /npm install --package-lock-only\b/.test(lockWorkflow));
-check('Lock workflow verifies the Playwright version', lockWorkflow.includes("node_modules/@playwright/test"));
+check('Lock workflow verifies the Playwright version', lockWorkflow.includes('node_modules/@playwright/test'));
 check('Lock workflow detects an untracked first lockfile', /git status --porcelain -- package-lock\.json/.test(lockWorkflow));
 check('Lock workflow pushes to main explicitly', /git push origin HEAD:main/.test(lockWorkflow));
 check('Lock workflow does not use git diff for first-run detection', !/git diff --quiet -- package-lock\.json/.test(lockWorkflow));
+check('Boundary workflow checks out main explicitly', /ref:\s*main\b/.test(boundaryWorkflow));
+check('Boundary workflow validates the vendored GeoJSON', boundaryWorkflow.includes("assert data.get('type') == 'FeatureCollection'") && boundaryWorkflow.includes('assert len(features) >= 170'));
+check('Boundary workflow detects an untracked first asset', /git status --porcelain -- data\/country-boundaries\.geojson/.test(boundaryWorkflow));
+check('Boundary workflow pushes to main explicitly', /git push origin HEAD:main/.test(boundaryWorkflow));
+check('Boundary workflow does not use git diff for first-run detection', !/git diff --quiet -- data\/country-boundaries\.geojson/.test(boundaryWorkflow));
 
 if (exists('package-lock.json')) {
   const lock = JSON.parse(read('package-lock.json'));
