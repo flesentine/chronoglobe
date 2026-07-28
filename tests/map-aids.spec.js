@@ -41,6 +41,8 @@ test('gameplay survives unavailable country boundary sources', async ({ page }, 
   await expect(page.locator('.imagery-badge')).toContainText('gameplay still works');
   await page.locator('#startGameBtn').click();
   await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#roundStat')).toContainText('1 / 5');
+  await expect(page.locator('#factText')).not.toHaveText('Choose a game to begin.');
   await page.evaluate(() => window.placeGuess(10, 20));
   await expect(page.locator('#lockBtn')).toBeEnabled();
   await page.locator('#lockBtn').click();
