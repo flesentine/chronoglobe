@@ -21,6 +21,7 @@ const readiness = read('tools/release-readiness.html');
 const workflow = read('.github/workflows/browser-smoke-tests.yml');
 const lockWorkflow = read('.github/workflows/generate-package-lock.yml');
 const boundaryWorkflow = read('.github/workflows/vendor-country-boundaries.yml');
+const playwrightConfig = read('playwright.config.js');
 
 const appVersion = persistence.match(/APP_VERSION='([^']+)'/)?.[1];
 const contentVersion = persistence.match(/CONTENT_VERSION='([^']+)'/)?.[1];
@@ -54,6 +55,7 @@ check('Production script references are unique', new Set(localScriptSources).siz
 
 const syntaxTargets = [...new Set([
   ...localScriptSources,
+  'playwright.config.js',
   'tools/release-preflight.js',
   ...fs.readdirSync(path.join(root, 'tests')).filter(file => file.endsWith('.js')).map(file => `tests/${file}`)
 ])].filter(exists);
@@ -83,6 +85,12 @@ check('Readiness dashboard checks app version', readiness.includes(`APP_VERSION=
 check('Readiness dashboard checks content version', readiness.includes(`CONTENT_VERSION==='${contentVersion}'`), contentVersion || 'missing');
 check('Default test command combines preflight and browser tests', pkg.scripts?.test === 'npm run preflight && npm run test:browser');
 check('Browser-only test command is available', pkg.scripts?.['test:browser'] === 'playwright test');
+check('Playwright forbids focused tests in CI', /forbidOnly:\s*Boolean\(process\.env\.CI\)/.test(playwrightConfig));
+check('Playwright stores output in test-results', /outputDir:\s*['"]test-results['"]/.test(playwrightConfig));
+check('Playwright retains trace, screenshot, and video on failure', playwrightConfig.includes("trace: 'retain-on-failure'") && playwrightConfig.includes("screenshot: 'only-on-failure'") && playwrightConfig.includes("video: 'retain-on-failure'"));
+check('Playwright emits GitHub annotations', playwrightConfig.includes("['github']"));
+check('Playwright emits an HTML report', playwrightConfig.includes("['html', { open: 'never' }]"));
+check('Playwright emits machine-readable JSON results', playwrightConfig.includes("['json', { outputFile: 'test-results/results.json' }]"));
 check('Browser workflow uses Node 22', /node-version:\s*22\b/.test(workflow));
 check('Browser workflow always uses npm ci', /run:\s*npm ci --no-audit --no-fund\b/.test(workflow));
 check('Browser workflow enables npm cache', /cache:\s*npm\b/.test(workflow));
