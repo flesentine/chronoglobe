@@ -14,6 +14,7 @@ Live site: https://flesentine.github.io/chronoglobe/
 - Canonical runtime with validated legacy fallback
 - Vendored Natural Earth country boundaries with a remote emergency fallback
 - Locked Node 22 / Playwright 1.55.0 release-test toolchain
+- Immutable GitHub Action pins with weekly Dependabot review
 
 ## Features
 
@@ -48,28 +49,47 @@ Then open `http://127.0.0.1:4173`.
 
 ## Release preflight and browser tests
 
-Run the fast repository consistency checks without opening a browser:
+Run repository consistency checks without opening a browser:
 
 ```bash
 npm run preflight
 ```
 
-The preflight verifies version alignment, canonical script order, required workflows and diagnostics, deleted-loader absence, single replayability loading, the vendored boundary asset, and the committed dependency lock.
+Preflight verifies the release versions, canonical script order, production file references, JavaScript syntax, editorial and diagnostic assets, the vendored boundary data, the committed dependency lock, repository ignore rules, Dependabot coverage, immutable GitHub Action pins, test-discovery thresholds, and the weekly browser-workflow schedule.
 
-Install Chromium and run the full suite:
+Install Chromium and run the complete release test command:
 
 ```bash
 npx playwright install chromium
 npm test
 ```
 
-`npm test` runs the release preflight first, then Playwright. Focused commands:
+`npm test` runs preflight first and then the full Playwright suite. To run browser tests without repeating preflight:
+
+```bash
+npm run test:browser
+```
+
+Focused commands run preflight before their selected suite:
 
 ```bash
 npm run test:smoke
 npm run test:mobile
 npm run test:diagnostics
 ```
+
+## Continuous verification
+
+The Browser smoke tests workflow runs on:
+
+- every push to `main`
+- every pull request
+- manual workflow dispatch
+- a weekly Monday schedule
+
+CI installs only locked dependencies, runs preflight, discovers the Playwright suite, verifies minimum test and file coverage, installs Chromium, and then runs the browser suite. Failures retain screenshots, traces, video, console logs, JSON results, and the HTML report. Release-verification artifacts are retained for 14 days.
+
+The workflow uses immutable commit SHAs for external GitHub Actions. Dependabot checks npm and GitHub Actions dependencies weekly so proposed updates can be reviewed before pins change.
 
 ## Release diagnostics
 
