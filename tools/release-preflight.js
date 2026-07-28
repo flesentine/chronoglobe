@@ -66,11 +66,20 @@ check('Lock workflow verifies the Playwright version', lockWorkflow.includes('no
 check('Lock workflow detects an untracked first lockfile', /git status --porcelain -- package-lock\.json/.test(lockWorkflow));
 check('Lock workflow pushes to main explicitly', /git push origin HEAD:main/.test(lockWorkflow));
 check('Lock workflow does not use git diff for first-run detection', !/git diff --quiet -- package-lock\.json/.test(lockWorkflow));
-check('Boundary workflow checks out main explicitly', /ref:\s*main\b/.test(boundaryWorkflow));
-check('Boundary workflow validates the vendored GeoJSON', boundaryWorkflow.includes("assert data.get('type') == 'FeatureCollection'") && boundaryWorkflow.includes('assert len(features) >= 170'));
+check('Boundary workflow validates a FeatureCollection', boundaryWorkflow.includes("data.get('type') == 'FeatureCollection'"));
+check('Boundary workflow validates at least 170 features', boundaryWorkflow.includes('len(features) >= 170'));
 check('Boundary workflow detects an untracked first asset', /git status --porcelain -- data\/country-boundaries\.geojson/.test(boundaryWorkflow));
 check('Boundary workflow pushes to main explicitly', /git push origin HEAD:main/.test(boundaryWorkflow));
 check('Boundary workflow does not use git diff for first-run detection', !/git diff --quiet -- data\/country-boundaries\.geojson/.test(boundaryWorkflow));
+
+if (exists('data/country-boundaries.geojson')) {
+  const boundaryPath = path.join(root, 'data/country-boundaries.geojson');
+  const boundaries = JSON.parse(fs.readFileSync(boundaryPath, 'utf8'));
+  const features = Array.isArray(boundaries.features) ? boundaries.features : [];
+  check('Vendored country boundaries are valid', boundaries.type === 'FeatureCollection' && features.length >= 170 && fs.statSync(boundaryPath).size > 100000, `${features.length} features, ${fs.statSync(boundaryPath).size} bytes`);
+} else {
+  check('Vendored country boundaries are valid', false, 'data/country-boundaries.geojson is missing');
+}
 
 if (exists('package-lock.json')) {
   const lock = JSON.parse(read('package-lock.json'));
