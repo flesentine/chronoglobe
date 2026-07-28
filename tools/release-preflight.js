@@ -61,6 +61,8 @@ check('Browser workflow runs the package test command', /run:\s*npm test\b/.test
 check('Browser workflow uses npm ci when locked', /run:\s*npm ci\b/.test(workflow));
 check('Browser workflow has an explicit no-lock fallback', workflow.includes('package-lock.json is missing'));
 check('Lock workflow checks out main explicitly', /ref:\s*main\b/.test(lockWorkflow));
+check('Lock workflow runs automatically for package changes', /push:[\s\S]*branches:\s*\[main\][\s\S]*package\.json/.test(lockWorkflow));
+check('Lock workflow runs automatically when repaired', lockWorkflow.includes("'.github/workflows/generate-package-lock.yml'"));
 check('Lock workflow generates package-lock only', /npm install --package-lock-only\b/.test(lockWorkflow));
 check('Lock workflow verifies the Playwright version', lockWorkflow.includes('node_modules/@playwright/test'));
 check('Lock workflow detects an untracked first lockfile', /git status --porcelain -- package-lock\.json/.test(lockWorkflow));
@@ -86,7 +88,7 @@ if (exists('package-lock.json')) {
   const lockedPlaywright = lock.packages?.['node_modules/@playwright/test']?.version;
   check('Package lock matches pinned Playwright', lockedPlaywright === playwrightVersion, `${playwrightVersion} / ${lockedPlaywright || 'missing'}`);
 } else {
-  console.warn('WARN: package-lock.json is not committed yet. Run the Generate package lock workflow before final release verification.');
+  console.warn('WARN: package-lock.json is not committed yet. The automatic Generate package lock workflow should create it from package.json.');
 }
 
 const failures = checks.filter(item => !item.passed);
