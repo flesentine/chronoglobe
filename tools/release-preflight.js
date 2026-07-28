@@ -45,8 +45,8 @@ check('Production canonical scripts are present', positions.every(position => po
 check('Production canonical scripts are ordered correctly', positions.every((position, index) => index === 0 || position > positions[index - 1]));
 check('Replayability loads exactly once', (index.match(/src="replayability\.js"/g) || []).length === 1);
 check('Production page does not load deleted Expert overrides', !index.includes('expert-overrides.js'));
-check('Readiness dashboard checks app version', readiness.includes("expected:'1.9.0'"));
-check('Readiness dashboard checks content version', readiness.includes("expected:'canonical-150-expert-v1'"));
+check('Readiness dashboard checks app version', readiness.includes("APP_VERSION==='1.9.0'"));
+check('Readiness dashboard checks content version', readiness.includes("CONTENT_VERSION==='canonical-150-expert-v1'"));
 
 const failures = checks.filter(item => !item.passed);
 for (const item of checks) {
