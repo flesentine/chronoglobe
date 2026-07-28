@@ -81,6 +81,34 @@ test('loads the pinned MapLibre runtime and matching stylesheet', async ({ page 
   ]);
 });
 
+test('production startup has no same-origin asset failures or page errors', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  const pageErrors = [];
+  const failedRequests = [];
+  const badResponses = [];
+
+  page.on('pageerror', error => pageErrors.push(error.message));
+  page.on('requestfailed', request => {
+    const url = new URL(request.url());
+    if (url.origin === 'http://127.0.0.1:4173') {
+      failedRequests.push(`${request.method()} ${url.pathname}: ${request.failure()?.errorText || 'failed'}`);
+    }
+  });
+  page.on('response', response => {
+    const url = new URL(response.url());
+    if (url.origin === 'http://127.0.0.1:4173' && response.status() >= 400) {
+      badResponses.push(`${response.status()} ${url.pathname}`);
+    }
+  });
+
+  await openClean(page);
+  await page.waitForLoadState('networkidle');
+
+  expect(pageErrors).toEqual([]);
+  expect(failedRequests).toEqual([]);
+  expect(badResponses).toEqual([]);
+});
+
 test('starts a standard game, scores a guess, and advances', async ({ page }) => {
   await openClean(page);
   await startStandardGame(page);
