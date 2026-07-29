@@ -32,6 +32,10 @@ requireCheck(!index.includes('accessibility-focus.js'), 'obsolete accessibility-
 requireCheck(hasInitializationGuard, 'accessibility runtime must use a global initialization guard');
 requireCheck(runtime.includes('script[src="accessibility-runtime.js"]'), 'accessibility runtime must remove duplicate script nodes');
 requireCheck(runtime.includes("event.key==='Tab'"), 'accessibility runtime must preserve modal focus trapping');
+requireCheck(runtime.includes("element.setAttribute('inert','')"), 'accessibility runtime must make modal background content inert');
+requireCheck(runtime.includes("element.setAttribute('aria-hidden','true')"), 'accessibility runtime must hide modal background content from assistive technology');
+requireCheck(runtime.includes('restoreBackground'), 'accessibility runtime must restore prior background state when dialogs close');
+requireCheck(runtime.includes('previous.ariaHidden'), 'accessibility runtime must preserve existing aria-hidden values');
 requireCheck(/role=["']dialog["']/i.test(endScreenTag), 'final screen must declare role="dialog" in index.html');
 requireCheck(/aria-modal=["']true["']/i.test(endScreenTag), 'final screen must declare aria-modal="true" in index.html');
 requireCheck(/aria-labelledby=["']endTitle["']/i.test(endScreenTag), 'final screen must be labelled by endTitle in index.html');
@@ -44,4 +48,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`PASS: Runtime loading is stable — ${localScriptSources.length} unique local scripts, accessibility runtime loaded once, final dialog semantics are static`);
+console.log(`PASS: Runtime loading is stable — ${localScriptSources.length} unique local scripts, modal backgrounds are isolated, final dialog semantics are static`);
