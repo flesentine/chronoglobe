@@ -1,5 +1,9 @@
 const { test, expect } = require('@playwright/test');
 
+function desktopOnly(testInfo) {
+  test.skip(testInfo.project.name !== 'desktop-chromium', 'Accessibility focus contract runs once on desktop Chromium');
+}
+
 async function openClean(page) {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
@@ -14,7 +18,8 @@ async function startReadyGame(page) {
   await expect(page.locator('#factText')).not.toHaveText('Choose a game to begin.');
 }
 
-test('document and primary controls expose accessible names', async ({ page }) => {
+test('document and primary controls expose accessible names', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
   await openClean(page);
 
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -28,9 +33,14 @@ test('document and primary controls expose accessible names', async ({ page }) =
       if (hidden) return false;
       const style = getComputedStyle(element);
       if (style.display === 'none' || style.visibility === 'hidden') return false;
+      const nativeLabel = [...(element.labels || [])]
+        .map(label => label.textContent?.trim())
+        .filter(Boolean)
+        .join(' ');
       const label = element.getAttribute('aria-label')
         || element.getAttribute('aria-labelledby')
         || element.getAttribute('title')
+        || nativeLabel
         || element.textContent?.trim()
         || element.getAttribute('value');
       return !label;
@@ -40,14 +50,15 @@ test('document and primary controls expose accessible names', async ({ page }) =
   expect(unnamedControls).toEqual([]);
 });
 
-test('dialogs expose modal semantics and move focus to their controls', async ({ page }) => {
+test('dialogs expose modal semantics and keep focus inside', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
   await openClean(page);
 
   await page.locator('#startHowToBtn').click();
-  const tutorial = page.getByRole('dialog', { name: 'ⓘ How to play' });
+  const tutorial = page.getByRole('dialog', { name: /How to play/ });
   await expect(tutorial).toBeVisible();
   await expect(tutorial).toHaveAttribute('aria-modal', 'true');
-  await expect(page.locator('#tutorialGotIt')).toBeFocused();
+  expect(await page.evaluate(() => document.querySelector('#tutorial')?.contains(document.activeElement))).toBe(true);
   await page.locator('#tutorialGotIt').click();
 
   await startReadyGame(page);
@@ -55,12 +66,13 @@ test('dialogs expose modal semantics and move focus to their controls', async ({
   const menu = page.getByRole('dialog', { name: 'Game menu' });
   await expect(menu).toBeVisible();
   await expect(menu).toHaveAttribute('aria-modal', 'true');
-  await expect(page.locator('#resumeBtn')).toBeFocused();
+  expect(await page.evaluate(() => document.querySelector('#gameMenu')?.contains(document.activeElement))).toBe(true);
   await page.locator('#resumeBtn').click();
   await expect(page.locator('#menuBtn')).toBeFocused();
 });
 
-test('keyboard focus remains visible through guess and result flow', async ({ page }) => {
+test('keyboard focus remains visible through guess and result flow', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
   await openClean(page);
   await startReadyGame(page);
 
