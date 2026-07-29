@@ -25,6 +25,14 @@ async function focusStyle(locator) {
   });
 }
 
+async function tabUntilFocused(page, locator, maxTabs = 12) {
+  for (let attempt = 0; attempt < maxTabs; attempt += 1) {
+    if (await locator.evaluate(element => element === document.activeElement)) return;
+    await page.keyboard.press('Tab');
+  }
+  await expect(locator).toBeFocused();
+}
+
 test('buttons expose a strong visible keyboard focus indicator', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
@@ -42,7 +50,7 @@ test('custom radio choices expose focus on their visible label surface', async (
   await openClean(page);
 
   const easyChoice = page.locator('input[name="difficultyChoice"][value="easy"]');
-  await page.keyboard.press('Tab');
+  await tabUntilFocused(page, easyChoice);
   await expect(easyChoice).toBeFocused();
 
   const result = await easyChoice.evaluate(input => {
