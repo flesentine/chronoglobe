@@ -1,4 +1,9 @@
 (()=>{
+  const runtimeScripts=[...document.querySelectorAll('script[src="accessibility-runtime.js"]')];
+  runtimeScripts.slice(1).forEach(script=>script.remove());
+  if(window.__CHRONO_ACCESSIBILITY_RUNTIME__)return;
+  window.__CHRONO_ACCESSIBILITY_RUNTIME__=true;
+
   const openerIds=new Set(['startHowToBtn','howToBtn','menuHowToBtn']);
   const closerIds=new Set(['tutorialClose','tutorialGotIt']);
   const focusableSelector=[
