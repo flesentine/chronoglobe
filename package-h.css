@@ -1,5 +1,8 @@
 .imagery-badge.overlay-error{color:#ffd7dc;border-color:rgba(255,123,136,.42);background:rgba(54,14,24,.9)}
 
+/* Modal surfaces must stay above the start screen and other app overlays. */
+.tutorial,.end-screen{z-index:70}
+
 @media(max-width:700px){
   .start-card{max-height:calc(100svh - 18px);overflow:auto}
   .start-actions{position:sticky;bottom:0;padding-top:10px;background:linear-gradient(to bottom,transparent,rgba(5,14,28,.98) 28%)}
