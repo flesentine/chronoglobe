@@ -99,9 +99,21 @@ test('final score screen is a focused modal', async ({ page }, testInfo) => {
   await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'true');
   await expect(page.locator('#endTitle')).toBeFocused();
 
-  await page.locator('#playAgainBtn').focus();
+  const focusableIds = await page.locator('#endScreen button:not([hidden]):not([disabled])').evaluateAll(buttons => buttons
+    .filter(button => {
+      const style = getComputedStyle(button);
+      return style.display !== 'none' && style.visibility !== 'hidden' && button.getClientRects().length > 0;
+    })
+    .map(button => button.id));
+  expect(focusableIds.length).toBeGreaterThan(0);
+
+  const firstAction = page.locator(`#${focusableIds[0]}`);
+  const lastAction = page.locator(`#${focusableIds.at(-1)}`);
+  await lastAction.focus();
   await page.keyboard.press('Tab');
-  await expect(page.locator('#playAgainBtn')).toBeFocused();
+  await expect(firstAction).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(lastAction).toBeFocused();
 });
 
 test('keyboard focus remains visible through guess and result flow', async ({ page }, testInfo) => {
