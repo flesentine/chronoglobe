@@ -41,8 +41,11 @@ test('custom radio choices expose focus on their visible label surface', async (
   desktopOnly(testInfo);
   await openClean(page);
 
-  const result = await page.locator('input[name="difficultyChoice"][value="easy"]').evaluate(input => {
-    input.focus();
+  const easyChoice = page.locator('input[name="difficultyChoice"][value="easy"]');
+  await page.keyboard.press('Tab');
+  await expect(easyChoice).toBeFocused();
+
+  const result = await easyChoice.evaluate(input => {
     const visibleSurface = input.nextElementSibling;
     const style = getComputedStyle(visibleSurface);
     return {
