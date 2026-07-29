@@ -78,4 +78,4 @@ test('keyboard focus remains visible through guess and result flow', async ({ pa
   await expect(page.locator('#nextBtn')).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('#roundStat')).toContainText('2 / 5');
-}
+});
