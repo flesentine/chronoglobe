@@ -87,6 +87,23 @@ test('dialogs trap focus and return it to their opener', async ({ page }, testIn
   await expect(page.locator('#menuBtn')).toBeFocused();
 });
 
+test('final score screen is a focused modal', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await startReadyGame(page);
+
+  await page.evaluate(() => document.querySelector('#endScreen')?.classList.add('show'));
+  const finalDialog = page.getByRole('dialog', { name: /Curious Traveler|History Hunter|Time Traveler|Master Historian/ });
+  await expect(finalDialog).toBeVisible();
+  await expect(finalDialog).toHaveAttribute('aria-modal', 'true');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#endTitle')).toBeFocused();
+
+  await page.locator('#playAgainBtn').focus();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#playAgainBtn')).toBeFocused();
+});
+
 test('keyboard focus remains visible through guess and result flow', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
