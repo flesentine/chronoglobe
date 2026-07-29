@@ -22,6 +22,8 @@ const localScriptSources = [...index.matchAll(/<script\s+[^>]*src=["']([^"']+)["
   .filter(source => !/^(?:https?:)?\/\//i.test(source));
 const duplicates = [...new Set(localScriptSources.filter((source, index) => localScriptSources.indexOf(source) !== index))];
 const hasInitializationGuard = /if\s*\(\s*window\.__CHRONO(?:GLOBE)?_ACCESSIBILITY_RUNTIME__\s*\)\s*return\s*;[\s\S]*window\.__CHRONO(?:GLOBE)?_ACCESSIBILITY_RUNTIME__\s*=\s*true\s*;/.test(runtime);
+const endScreenTag = index.match(/<div\s+[^>]*id=["']endScreen["'][^>]*>/i)?.[0] || '';
+const endTitleTag = index.match(/<h2\s+[^>]*id=["']endTitle["'][^>]*>/i)?.[0] || '';
 
 requireCheck(exists(runtimePath), `${runtimePath} must exist`);
 requireCheck(runtimeReferences.length === 1, `${runtimePath} must be loaded exactly once in index.html; found ${runtimeReferences.length}`);
@@ -30,6 +32,11 @@ requireCheck(!index.includes('accessibility-focus.js'), 'obsolete accessibility-
 requireCheck(hasInitializationGuard, 'accessibility runtime must use a global initialization guard');
 requireCheck(runtime.includes('script[src="accessibility-runtime.js"]'), 'accessibility runtime must remove duplicate script nodes');
 requireCheck(runtime.includes("event.key==='Tab'"), 'accessibility runtime must preserve modal focus trapping');
+requireCheck(/role=["']dialog["']/i.test(endScreenTag), 'final screen must declare role="dialog" in index.html');
+requireCheck(/aria-modal=["']true["']/i.test(endScreenTag), 'final screen must declare aria-modal="true" in index.html');
+requireCheck(/aria-labelledby=["']endTitle["']/i.test(endScreenTag), 'final screen must be labelled by endTitle in index.html');
+requireCheck(/tabindex=["']-1["']/i.test(endTitleTag), 'final title must be programmatically focusable in index.html');
+requireCheck(!runtime.includes("endScreen.setAttribute('role','dialog')"), 'final dialog semantics must not depend on runtime mutation');
 
 if (failures.length) {
   for (const failure of failures) console.error(`FAIL: ${failure}`);
@@ -37,4 +44,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`PASS: Runtime loading is stable — ${localScriptSources.length} unique local scripts, accessibility runtime loaded once`);
+console.log(`PASS: Runtime loading is stable — ${localScriptSources.length} unique local scripts, accessibility runtime loaded once, final dialog semantics are static`);
