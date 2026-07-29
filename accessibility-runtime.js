@@ -57,14 +57,10 @@
     }
   };
 
-  const configureEndScreen=()=>{
+  const watchEndScreen=()=>{
     const endScreen=document.getElementById('endScreen');
     const endTitle=document.getElementById('endTitle');
     if(!endScreen||!endTitle)return;
-    endScreen.setAttribute('role','dialog');
-    endScreen.setAttribute('aria-modal','true');
-    endScreen.setAttribute('aria-labelledby','endTitle');
-    endTitle.setAttribute('tabindex','-1');
     new MutationObserver(()=>{
       if(!endScreen.classList.contains('show'))return;
       document.getElementById('gameApp')?.setAttribute('aria-hidden','true');
@@ -86,5 +82,5 @@
     if(event.key==='Escape'&&document.getElementById('tutorial')?.classList.contains('show'))restoreFocus();
   },true);
 
-  configureEndScreen();
+  watchEndScreen();
 })();
