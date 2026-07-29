@@ -65,3 +65,7 @@ if(!CHRONO_VALID){
     counts:CHRONO_COUNTS
   });
 }
+
+const CHRONO_ACCESSIBILITY_RUNTIME=document.createElement('script');
+CHRONO_ACCESSIBILITY_RUNTIME.src='accessibility-runtime.js';
+document.head.appendChild(CHRONO_ACCESSIBILITY_RUNTIME);
