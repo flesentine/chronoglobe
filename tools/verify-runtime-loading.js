@@ -21,13 +21,14 @@ const localScriptSources = [...index.matchAll(/<script\s+[^>]*src=["']([^"']+)["
   .map(match => match[1])
   .filter(source => !/^(?:https?:)?\/\//i.test(source));
 const duplicates = [...new Set(localScriptSources.filter((source, index) => localScriptSources.indexOf(source) !== index))];
+const hasInitializationGuard = /if\s*\(\s*window\.__CHRONO(?:GLOBE)?_ACCESSIBILITY_RUNTIME__\s*\)\s*return\s*;[\s\S]*window\.__CHRONO(?:GLOBE)?_ACCESSIBILITY_RUNTIME__\s*=\s*true\s*;/.test(runtime);
 
 requireCheck(exists(runtimePath), `${runtimePath} must exist`);
 requireCheck(runtimeReferences.length === 1, `${runtimePath} must be loaded exactly once in index.html; found ${runtimeReferences.length}`);
 requireCheck(duplicates.length === 0, `production scripts must be unique; duplicates: ${duplicates.join(', ')}`);
 requireCheck(!index.includes('accessibility-focus.js'), 'obsolete accessibility-focus.js must not be loaded');
-requireCheck(runtime.includes('window.__CHRONOGLOBE_ACCESSIBILITY_RUNTIME__'), 'accessibility runtime must use a global initialization guard');
-requireCheck(runtime.includes("script[src=\"accessibility-runtime.js\"]"), 'accessibility runtime must remove duplicate script nodes');
+requireCheck(hasInitializationGuard, 'accessibility runtime must use a global initialization guard');
+requireCheck(runtime.includes('script[src="accessibility-runtime.js"]'), 'accessibility runtime must remove duplicate script nodes');
 requireCheck(runtime.includes("event.key==='Tab'"), 'accessibility runtime must preserve modal focus trapping');
 
 if (failures.length) {
