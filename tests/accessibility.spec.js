@@ -87,6 +87,42 @@ test('dialogs trap focus and return it to their opener', async ({ page }, testIn
   await expect(page.locator('#menuBtn')).toBeFocused();
 });
 
+test('dialogs isolate and restore background interaction', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+
+  await page.locator('#startHowToBtn').click();
+  await expect(page.locator('#startScreen')).toHaveAttribute('inert', '');
+  await expect(page.locator('#startScreen')).toHaveAttribute('aria-hidden', 'true');
+  await page.evaluate(() => document.querySelector('#startGameBtn')?.focus());
+  expect(await page.evaluate(() => document.querySelector('#tutorial')?.contains(document.activeElement))).toBe(true);
+
+  await page.locator('#tutorialGotIt').click();
+  await expect(page.locator('#startScreen')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#startScreen')).not.toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#startHowToBtn')).toBeFocused();
+
+  await startReadyGame(page);
+  await page.locator('#menuBtn').click();
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'true');
+  await page.evaluate(() => document.querySelector('#menuBtn')?.focus());
+  expect(await page.evaluate(() => document.querySelector('#gameMenu')?.contains(document.activeElement))).toBe(true);
+
+  await page.locator('#resumeBtn').click();
+  await expect(page.locator('#gameApp')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#menuBtn')).toBeFocused();
+
+  await page.locator('#hintBtn').click();
+  await expect(page.locator('#confirmHint')).toHaveClass(/show/);
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+  await page.locator('#cancelHintBtn').click();
+  await expect(page.locator('#gameApp')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#hintBtn')).toBeFocused();
+});
+
 test('final score screen is a focused modal', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
@@ -97,6 +133,7 @@ test('final score screen is a focused modal', async ({ page }, testInfo) => {
   await expect(finalDialog).toBeVisible();
   await expect(finalDialog).toHaveAttribute('aria-modal', 'true');
   await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
   await expect(page.locator('#endTitle')).toBeFocused();
 
   const focusableIds = await page.locator('#endScreen button:not([hidden]):not([disabled])').evaluateAll(buttons => buttons
