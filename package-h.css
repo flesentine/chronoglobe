@@ -3,6 +3,18 @@
 /* Modal surfaces must stay above the start screen and other app overlays. */
 .tutorial,.end-screen{z-index:70}
 
+/* Keyboard focus must remain clearly visible on every interactive control. */
+:where(button,a[href],input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid #ffd166;
+  outline-offset:3px;
+  box-shadow:0 0 0 5px rgba(6,17,31,.9),0 0 0 8px rgba(101,233,255,.72);
+}
+.choice input:focus-visible+span{
+  outline:3px solid #ffd166;
+  outline-offset:3px;
+  box-shadow:0 0 0 5px rgba(6,17,31,.9),0 0 0 8px rgba(101,233,255,.72);
+}
+
 @media(max-width:700px){
   .start-card{max-height:calc(100svh - 18px);overflow:auto}
   .start-actions{position:sticky;bottom:0;padding-top:10px;background:linear-gradient(to bottom,transparent,rgba(5,14,28,.98) 28%)}
