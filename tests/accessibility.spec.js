@@ -9,6 +9,7 @@ async function openClean(page) {
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await expect(page.locator('#startScreen')).toHaveClass(/show/);
+  await expect(page.locator('script[src="accessibility-runtime.js"]')).toHaveCount(1);
 }
 
 async function startReadyGame(page) {
@@ -50,7 +51,7 @@ test('document and primary controls expose accessible names', async ({ page }, t
   expect(unnamedControls).toEqual([]);
 });
 
-test('dialogs expose modal semantics and keep focus inside', async ({ page }, testInfo) => {
+test('dialogs expose modal semantics and return focus to their opener', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
 
@@ -60,6 +61,7 @@ test('dialogs expose modal semantics and keep focus inside', async ({ page }, te
   await expect(tutorial).toHaveAttribute('aria-modal', 'true');
   expect(await page.evaluate(() => document.querySelector('#tutorial')?.contains(document.activeElement))).toBe(true);
   await page.locator('#tutorialGotIt').click();
+  await expect(page.locator('#startHowToBtn')).toBeFocused();
 
   await startReadyGame(page);
   await page.locator('#menuBtn').click();
