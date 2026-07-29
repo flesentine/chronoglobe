@@ -1,0 +1,81 @@
+const { test, expect } = require('@playwright/test');
+
+async function openClean(page) {
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await expect(page.locator('#startScreen')).toHaveClass(/show/);
+}
+
+async function startReadyGame(page) {
+  await page.locator('#startGameBtn').click();
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#roundStat')).toContainText('1 / 5');
+  await expect(page.locator('#factText')).not.toHaveText('Choose a game to begin.');
+}
+
+test('document and primary controls expose accessible names', async ({ page }) => {
+  await openClean(page);
+
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.locator('main#gameApp')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Start a quick Easy game' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'How to play' }).first()).toBeVisible();
+
+  const unnamedControls = await page.evaluate(() => [...document.querySelectorAll('button, input, select, textarea, a[href]')]
+    .filter(element => {
+      const hidden = element.hidden || element.closest('[hidden]');
+      if (hidden) return false;
+      const style = getComputedStyle(element);
+      if (style.display === 'none' || style.visibility === 'hidden') return false;
+      const label = element.getAttribute('aria-label')
+        || element.getAttribute('aria-labelledby')
+        || element.getAttribute('title')
+        || element.textContent?.trim()
+        || element.getAttribute('value');
+      return !label;
+    })
+    .map(element => element.id || element.outerHTML.slice(0, 120)));
+
+  expect(unnamedControls).toEqual([]);
+});
+
+test('dialogs expose modal semantics and move focus to their controls', async ({ page }) => {
+  await openClean(page);
+
+  await page.locator('#startHowToBtn').click();
+  const tutorial = page.getByRole('dialog', { name: 'ⓘ How to play' });
+  await expect(tutorial).toBeVisible();
+  await expect(tutorial).toHaveAttribute('aria-modal', 'true');
+  await expect(page.locator('#tutorialGotIt')).toBeFocused();
+  await page.locator('#tutorialGotIt').click();
+
+  await startReadyGame(page);
+  await page.locator('#menuBtn').click();
+  const menu = page.getByRole('dialog', { name: 'Game menu' });
+  await expect(menu).toBeVisible();
+  await expect(menu).toHaveAttribute('aria-modal', 'true');
+  await expect(page.locator('#resumeBtn')).toBeFocused();
+  await page.locator('#resumeBtn').click();
+  await expect(page.locator('#menuBtn')).toBeFocused();
+});
+
+test('keyboard focus remains visible through guess and result flow', async ({ page }) => {
+  await openClean(page);
+  await startReadyGame(page);
+
+  await page.evaluate(() => window.placeGuess(12, 12));
+  await expect(page.locator('#lockBtn')).toBeEnabled();
+  await page.locator('#lockBtn').focus();
+  await expect(page.locator('#lockBtn')).toBeFocused();
+  await page.keyboard.press('Enter');
+
+  await expect(page.locator('#scoreDock')).toHaveClass(/show/);
+  await expect(page.locator('#resultHeading')).toBeFocused();
+  await expect(page.locator('#nextBtn')).toBeVisible();
+
+  await page.locator('#nextBtn').focus();
+  await expect(page.locator('#nextBtn')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#roundStat')).toContainText('2 / 5');
+}
