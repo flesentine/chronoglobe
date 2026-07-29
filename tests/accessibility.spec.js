@@ -51,7 +51,7 @@ test('document and primary controls expose accessible names', async ({ page }, t
   expect(unnamedControls).toEqual([]);
 });
 
-test('dialogs expose modal semantics and return focus to their opener', async ({ page }, testInfo) => {
+test('dialogs trap focus and return it to their opener', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
 
@@ -60,6 +60,13 @@ test('dialogs expose modal semantics and return focus to their opener', async ({
   await expect(tutorial).toBeVisible();
   await expect(tutorial).toHaveAttribute('aria-modal', 'true');
   expect(await page.evaluate(() => document.querySelector('#tutorial')?.contains(document.activeElement))).toBe(true);
+
+  await page.locator('#tutorialGotIt').focus();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#tutorialClose')).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('#tutorialGotIt')).toBeFocused();
+
   await page.locator('#tutorialGotIt').click();
   await expect(page.locator('#startHowToBtn')).toBeFocused();
 
@@ -69,6 +76,13 @@ test('dialogs expose modal semantics and return focus to their opener', async ({
   await expect(menu).toBeVisible();
   await expect(menu).toHaveAttribute('aria-modal', 'true');
   expect(await page.evaluate(() => document.querySelector('#gameMenu')?.contains(document.activeElement))).toBe(true);
+
+  await page.locator('#newGameBtn').focus();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#menuClose')).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('#newGameBtn')).toBeFocused();
+
   await page.locator('#resumeBtn').click();
   await expect(page.locator('#menuBtn')).toBeFocused();
 });
