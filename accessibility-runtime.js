@@ -6,6 +6,7 @@
 
   const openerIds=new Set(['startHowToBtn','howToBtn','menuHowToBtn']);
   const closerIds=new Set(['tutorialClose','tutorialGotIt']);
+  const dialogCloseIds=new Set(['tutorialClose','tutorialGotIt','menuClose','resumeBtn','cancelNewGameBtn','confirmNewGameBtn','cancelHintBtn','confirmHintBtn','resumeSavedBtn','discardSavedBtn','playAgainBtn']);
   const focusableSelector=['button:not([disabled]):not([hidden])','a[href]','input:not([disabled]):not([type="hidden"])','select:not([disabled])','textarea:not([disabled])','[tabindex]:not([tabindex="-1"])'].join(',');
   const isolated=new Map();
   let tutorialInvoker=null;
@@ -66,6 +67,12 @@
   };
 
   document.addEventListener('click',event=>{
+    const dialog=activeDialog();
+    const button=event.target?.closest?.('button');
+    if(dialog&&((button&&dialogCloseIds.has(button.id))||(dialog.id==='tutorial'&&event.target===dialog)))restoreBackground();
+  },true);
+
+  document.addEventListener('click',event=>{
     const opener=event.target?.closest?.('button');
     if(opener&&openerIds.has(opener.id))tutorialInvoker=opener;
     const closer=event.target?.closest?.('button');
@@ -74,6 +81,7 @@
   });
 
   document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&activeDialog()?.id!=='endScreen')restoreBackground();
     if(event.key==='Tab')trapFocus(event);
     if(event.key==='Escape'&&document.getElementById('tutorial')?.classList.contains('show'))restoreFocus();
   },true);
