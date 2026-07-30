@@ -158,6 +158,37 @@ test('nested confirmation keeps the game and parent menu isolated', async ({ pag
   await expect(page.locator('#menuBtn')).toBeFocused();
 });
 
+test('tutorial opened from the game menu returns to the menu safely', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await startReadyGame(page);
+
+  await page.locator('#menuBtn').click();
+  await expect(page.locator('#gameMenu')).toHaveClass(/show/);
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+
+  await page.locator('#menuHowToBtn').click();
+  await expect(page.locator('#tutorial')).toHaveClass(/show/);
+  await expect(page.locator('#tutorial')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameMenu')).toHaveAttribute('inert', '');
+  await expect(page.locator('#gameMenu')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+  expect(await page.evaluate(() => document.querySelector('#tutorial')?.contains(document.activeElement))).toBe(true);
+
+  await page.locator('#tutorialGotIt').click();
+  await expect(page.locator('#tutorial')).not.toHaveClass(/show/);
+  await expect(page.locator('#gameMenu')).toHaveClass(/show/);
+  await expect(page.locator('#gameMenu')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameMenu')).not.toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+  await expect(page.locator('#menuHowToBtn')).toBeFocused();
+
+  await page.locator('#resumeBtn').click();
+  await expect(page.locator('#gameApp')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#menuBtn')).toBeFocused();
+});
+
 test('saved-game resume dialog isolates startup and restores the game', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
