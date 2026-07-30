@@ -54,10 +54,11 @@ test('custom radio choices expose focus on their visible label surface', async (
   await expect(easyChoice).toBeFocused();
 
   const result = await easyChoice.evaluate(input => {
-    const visibleSurface = input.nextElementSibling;
+    const visibleSurface = input.closest('label.choice');
     const style = getComputedStyle(visibleSurface);
     return {
       inputFocusVisible: input.matches(':focus-visible'),
+      labelFocusWithin: visibleSurface.matches(':focus-within'),
       outlineStyle: style.outlineStyle,
       outlineWidth: style.outlineWidth,
       outlineColor: style.outlineColor,
@@ -66,6 +67,7 @@ test('custom radio choices expose focus on their visible label surface', async (
   });
 
   expect(result.inputFocusVisible).toBe(true);
+  expect(result.labelFocusWithin).toBe(true);
   expect(result.outlineStyle).not.toBe('none');
   expect(Number.parseFloat(result.outlineWidth)).toBeGreaterThanOrEqual(3);
   expect(result.outlineColor).toBe('rgb(255, 209, 102)');
