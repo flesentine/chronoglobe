@@ -9,8 +9,7 @@
   outline-offset:3px;
   box-shadow:0 0 0 5px rgba(6,17,31,.9),0 0 0 8px rgba(101,233,255,.72);
 }
-.choice:has(input:focus-visible)>span,
-.choice input:focus-visible+span{
+.choice:focus-within{
   outline:3px solid #ffd166!important;
   outline-offset:3px;
   box-shadow:0 0 0 5px rgba(6,17,31,.9),0 0 0 8px rgba(101,233,255,.72)!important;
