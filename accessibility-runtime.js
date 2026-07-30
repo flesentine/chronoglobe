@@ -42,10 +42,10 @@
     }
   };
 
-  const focusWhenReady=(id,attempts=6)=>{
+  const focusWhenReady=(id,attempts=120)=>{
     const target=document.getElementById(id);
     const blocked=target?.closest('[inert]');
-    if(target&&isVisible(target)&&!target.disabled&&!blocked){
+    if(target&&!target.disabled&&!blocked){
       target.focus({preventScroll:true});
       if(document.activeElement===target){pendingFocusId=null;return;}
     }
@@ -93,7 +93,7 @@
     const closer=event.target?.closest?.('button');
     const tutorial=document.getElementById('tutorial');
     if((closer&&closerIds.has(closer.id))||event.target===tutorial)restoreFocus();
-    if(closer?.id==='discardSavedBtn')setTimeout(()=>focusWhenReady('startGameBtn'),0);
+    if(closer?.id==='discardSavedBtn')requestAnimationFrame(()=>focusWhenReady('startGameBtn'));
   });
 
   document.addEventListener('keydown',event=>{
