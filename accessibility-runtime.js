@@ -80,6 +80,7 @@
     const closer=event.target?.closest?.('button');
     const tutorial=document.getElementById('tutorial');
     if((closer&&closerIds.has(closer.id))||event.target===tutorial)restoreFocus();
+    if(closer?.id==='discardSavedBtn')requestAnimationFrame(()=>document.getElementById('startGameBtn')?.focus({preventScroll:true}));
   });
 
   document.addEventListener('keydown',event=>{
