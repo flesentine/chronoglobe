@@ -12,6 +12,7 @@
   const focusableSelector=['button:not([disabled]):not([hidden])','a[href]','input:not([disabled]):not([type="hidden"])','select:not([disabled])','textarea:not([disabled])','[tabindex]:not([tabindex="-1"])'].join(',');
   const isolated=new Map();
   let tutorialInvoker=null;
+  let pendingFocusId=null;
 
   const isVisible=element=>{
     if(!element||element.hidden)return false;
@@ -41,6 +42,16 @@
     }
   };
 
+  const focusWhenReady=(id,attempts=6)=>{
+    const target=document.getElementById(id);
+    const blocked=target?.closest('[inert]');
+    if(target&&isVisible(target)&&!target.disabled&&!blocked){
+      target.focus({preventScroll:true});
+      if(document.activeElement===target){pendingFocusId=null;return;}
+    }
+    if(attempts>0)requestAnimationFrame(()=>focusWhenReady(id,attempts-1));
+  };
+
   const restoreFocus=()=>{
     const target=tutorialInvoker;
     tutorialInvoker=null;
@@ -60,13 +71,10 @@
   const watchDialogs=()=>{
     const endScreen=document.getElementById('endScreen');
     const endTitle=document.getElementById('endTitle');
-    const resumeGameDialog=document.getElementById('resumeGameDialog');
-    const startScreen=document.getElementById('startScreen');
-    const startGameBtn=document.getElementById('startGameBtn');
     const observer=new MutationObserver(records=>{
       syncModalIsolation();
       if(records.some(record=>record.target===endScreen)&&endScreen?.classList.contains('show'))requestAnimationFrame(()=>endTitle?.focus({preventScroll:true}));
-      if(records.some(record=>record.target===resumeGameDialog)&&!resumeGameDialog?.classList.contains('show')&&startScreen?.classList.contains('show'))requestAnimationFrame(()=>startGameBtn?.focus({preventScroll:true}));
+      if(pendingFocusId&&!activeDialog())requestAnimationFrame(()=>focusWhenReady(pendingFocusId));
     });
     document.querySelectorAll('[role="dialog"][aria-modal="true"]').forEach(dialog=>observer.observe(dialog,{attributes:true,attributeFilter:['class']}));
     syncModalIsolation();
@@ -75,6 +83,7 @@
   document.addEventListener('click',event=>{
     const dialog=activeDialog();
     const button=event.target?.closest?.('button');
+    if(button?.id==='discardSavedBtn')pendingFocusId='startGameBtn';
     if(dialog&&((button&&(dialogCloseIds.has(button.id)||dialogTransitionIds.has(button.id)))||(dialog.id==='tutorial'&&event.target===dialog)))restoreBackground();
   },true);
 
@@ -84,6 +93,7 @@
     const closer=event.target?.closest?.('button');
     const tutorial=document.getElementById('tutorial');
     if((closer&&closerIds.has(closer.id))||event.target===tutorial)restoreFocus();
+    if(closer?.id==='discardSavedBtn')setTimeout(()=>focusWhenReady('startGameBtn'),0);
   });
 
   document.addEventListener('keydown',event=>{
