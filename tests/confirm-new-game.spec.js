@@ -27,7 +27,7 @@ test('confirming a new game clears progress and restores the start screen', asyn
 
   await page.locator('#newGameBtn').click();
   await expect(page.locator('#confirmNewGame')).toHaveClass(/show/);
-  await expect(page.locator('#confirmNewGameBtn')).toBeFocused();
+  await expect(page.locator('#cancelNewGameBtn')).toBeFocused();
   await expect(page.locator('#gameMenu')).toHaveAttribute('inert', '');
   await expect(page.locator('#gameMenu')).toHaveAttribute('aria-hidden', 'true');
   await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
