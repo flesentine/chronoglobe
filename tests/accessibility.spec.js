@@ -123,6 +123,36 @@ test('dialogs isolate and restore background interaction', async ({ page }, test
   await expect(page.locator('#hintBtn')).toBeFocused();
 });
 
+test('nested confirmation keeps the game and parent menu isolated', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await startReadyGame(page);
+
+  await page.locator('#menuBtn').click();
+  await expect(page.locator('#gameMenu')).toHaveClass(/show/);
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+
+  await page.locator('#newGameBtn').click();
+  await expect(page.locator('#confirmNewGame')).toHaveClass(/show/);
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+  await expect(page.locator('#gameMenu')).toHaveAttribute('inert', '');
+  await expect(page.locator('#gameMenu')).toHaveAttribute('aria-hidden', 'true');
+  expect(await page.evaluate(() => document.querySelector('#confirmNewGame')?.contains(document.activeElement))).toBe(true);
+
+  await page.locator('#cancelNewGameBtn').click();
+  await expect(page.locator('#confirmNewGame')).not.toHaveClass(/show/);
+  await expect(page.locator('#gameMenu')).toHaveClass(/show/);
+  await expect(page.locator('#gameMenu')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameMenu')).not.toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+  await expect(page.locator('#newGameBtn')).toBeFocused();
+
+  await page.locator('#resumeBtn').click();
+  await expect(page.locator('#gameApp')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#menuBtn')).toBeFocused();
+});
+
 test('final score screen is a focused modal', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
