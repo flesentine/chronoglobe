@@ -24,6 +24,10 @@ const duplicates = [...new Set(localScriptSources.filter((source, index) => loca
 const hasInitializationGuard = /if\s*\(\s*window\.__CHRONO(?:GLOBE)?_ACCESSIBILITY_RUNTIME__\s*\)\s*return\s*;[\s\S]*window\.__CHRONO(?:GLOBE)?_ACCESSIBILITY_RUNTIME__\s*=\s*true\s*;/.test(runtime);
 const endScreenTag = index.match(/<div\s+[^>]*id=["']endScreen["'][^>]*>/i)?.[0] || '';
 const endTitleTag = index.match(/<h2\s+[^>]*id=["']endTitle["'][^>]*>/i)?.[0] || '';
+const escapeSet = runtime.match(/const\s+escapeClosableDialogIds\s*=\s*new Set\(\[([^\]]*)\]\)/)?.[1] || '';
+const escapeDialogIds = [...escapeSet.matchAll(/["']([^"']+)["']/g)].map(match => match[1]);
+const requiredEscapeDialogs = ['tutorial', 'gameMenu', 'confirmNewGame', 'confirmHint'];
+const mandatoryDialogs = ['resumeGameDialog', 'endScreen'];
 
 requireCheck(exists(runtimePath), `${runtimePath} must exist`);
 requireCheck(runtimeReferences.length === 1, `${runtimePath} must be loaded exactly once in index.html; found ${runtimeReferences.length}`);
@@ -36,6 +40,9 @@ requireCheck(runtime.includes("element.setAttribute('inert','')"), 'accessibilit
 requireCheck(runtime.includes("element.setAttribute('aria-hidden','true')"), 'accessibility runtime must hide modal background content from assistive technology');
 requireCheck(runtime.includes('restoreBackground'), 'accessibility runtime must restore prior background state when dialogs close');
 requireCheck(runtime.includes('previous.ariaHidden'), 'accessibility runtime must preserve existing aria-hidden values');
+requireCheck(requiredEscapeDialogs.every(id => escapeDialogIds.includes(id)), 'Escape isolation contract must include every dialog the app closes with Escape');
+requireCheck(mandatoryDialogs.every(id => !escapeDialogIds.includes(id)), 'mandatory resume and final-score dialogs must remain isolated when Escape is pressed');
+requireCheck(/event\.key===['"]Escape['"]&&dialog&&escapeClosableDialogIds\.has\(dialog\.id\)\)restoreBackground\(\)/.test(runtime), 'Escape must restore background only for explicitly closable dialogs');
 requireCheck(/role=["']dialog["']/i.test(endScreenTag), 'final screen must declare role="dialog" in index.html');
 requireCheck(/aria-modal=["']true["']/i.test(endScreenTag), 'final screen must declare aria-modal="true" in index.html');
 requireCheck(/aria-labelledby=["']endTitle["']/i.test(endScreenTag), 'final screen must be labelled by endTitle in index.html');
@@ -48,4 +55,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`PASS: Runtime loading is stable — ${localScriptSources.length} unique local scripts, modal backgrounds are isolated, final dialog semantics are static`);
+console.log(`PASS: Runtime loading is stable — ${localScriptSources.length} unique local scripts, modal backgrounds and Escape behavior are isolated, final dialog semantics are static`);
