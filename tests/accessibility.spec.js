@@ -219,6 +219,38 @@ test('saved-game resume dialog isolates startup and restores the game', async ({
   await expect(page.locator('#menuBtn')).toBeFocused();
 });
 
+test('discarding a saved game restores a clean accessible start screen', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await startReadyGame(page);
+
+  await page.evaluate(() => window.placeGuess(12, 12));
+  await expect(page.locator('#lockBtn')).toBeEnabled();
+  await expect.poll(() => page.evaluate(() => Boolean(localStorage.getItem('chronoglobeActiveGame')))).toBe(true);
+
+  await page.reload();
+  await expect(page.locator('#resumeGameDialog')).toHaveClass(/show/);
+  await expect(page.locator('#discardSavedBtn')).toBeVisible();
+  await expect(page.locator('#startScreen')).toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+
+  await page.locator('#discardSavedBtn').click();
+
+  await expect(page.locator('#resumeGameDialog')).not.toHaveClass(/show/);
+  await expect(page.locator('#startScreen')).toHaveClass(/show/);
+  await expect(page.locator('#startScreen')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#startScreen')).not.toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#gameApp')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#startGameBtn')).toBeFocused();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('chronoglobeActiveGame'))).toBeNull();
+
+  await page.reload();
+  await expect(page.locator('#resumeGameDialog')).not.toHaveClass(/show/);
+  await expect(page.locator('#startScreen')).toHaveClass(/show/);
+  await expect(page.locator('#startGameBtn')).toBeFocused();
+});
+
 test('final score screen is a focused modal', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
