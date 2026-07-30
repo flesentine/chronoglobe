@@ -128,6 +128,11 @@ test('nested confirmation keeps the game and parent menu isolated', async ({ pag
   await openClean(page);
   await startReadyGame(page);
 
+  // The app intentionally skips confirmation before any meaningful progress.
+  // Place a guess so New Game follows the destructive nested-dialog path.
+  await page.evaluate(() => window.placeGuess(12, 12));
+  await expect(page.locator('#lockBtn')).toBeEnabled();
+
   await page.locator('#menuBtn').click();
   await expect(page.locator('#gameMenu')).toHaveClass(/show/);
   await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
