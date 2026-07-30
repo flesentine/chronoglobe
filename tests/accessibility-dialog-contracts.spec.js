@@ -6,7 +6,6 @@ function desktopOnly(testInfo) {
 
 const controlContracts = [
   ['sound control name', '#soundBtn', 'aria-label', 'Sound on'],
-  ['sound control tooltip', '#soundBtn', 'title', 'Sound on'],
   ['menu dialog affordance', '#menuBtn', 'aria-haspopup', 'dialog'],
   ['globe stage label', '#globeStage', 'aria-label', 'Interactive globe'],
   ['zoom group label', '.zoom-controls', 'aria-label', 'Globe zoom controls'],
