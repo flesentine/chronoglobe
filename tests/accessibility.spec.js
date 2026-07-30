@@ -158,6 +158,36 @@ test('nested confirmation keeps the game and parent menu isolated', async ({ pag
   await expect(page.locator('#menuBtn')).toBeFocused();
 });
 
+test('saved-game resume dialog isolates startup and restores the game', async ({ page }, testInfo) => {
+  desktopOnly(testInfo);
+  await openClean(page);
+  await startReadyGame(page);
+
+  await page.evaluate(() => window.placeGuess(12, 12));
+  await expect(page.locator('#lockBtn')).toBeEnabled();
+  await expect.poll(() => page.evaluate(() => Boolean(localStorage.getItem('chronoglobeActiveGame')))).toBe(true);
+
+  await page.reload();
+  await expect(page.locator('#resumeGameDialog')).toHaveClass(/show/);
+  await expect(page.locator('#resumeGameDialog')).toHaveAttribute('aria-modal', 'true');
+  await expect(page.locator('#startScreen')).toHaveAttribute('inert', '');
+  await expect(page.locator('#startScreen')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#gameApp')).toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('#resumeSavedBtn')).toBeFocused();
+
+  await page.evaluate(() => document.querySelector('#startGameBtn')?.focus());
+  expect(await page.evaluate(() => document.querySelector('#resumeGameDialog')?.contains(document.activeElement))).toBe(true);
+
+  await page.locator('#resumeSavedBtn').click();
+  await expect(page.locator('#resumeGameDialog')).not.toHaveClass(/show/);
+  await expect(page.locator('#gameApp')).not.toHaveAttribute('inert', '');
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#roundStat')).toContainText('1 / 5');
+  await expect(page.locator('#lockBtn')).toBeEnabled();
+  await expect(page.locator('#menuBtn')).toBeFocused();
+});
+
 test('final score screen is a focused modal', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await openClean(page);
