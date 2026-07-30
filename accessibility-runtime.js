@@ -10,6 +10,7 @@
   const dialogTransitionIds=new Set(['newGameBtn','menuHowToBtn']);
   const escapeClosableDialogIds=new Set(['tutorial','gameMenu','confirmNewGame','confirmHint']);
   const focusableSelector=['button:not([disabled]):not([hidden])','a[href]','input:not([disabled]):not([type="hidden"])','select:not([disabled])','textarea:not([disabled])','[tabindex]:not([tabindex="-1"])'].join(',');
+  const discardFocusKey='chronoglobeDiscardFocus';
   const isolated=new Map();
   let tutorialInvoker=null;
   let pendingFocusId=null;
@@ -83,7 +84,10 @@
   document.addEventListener('click',event=>{
     const dialog=activeDialog();
     const button=event.target?.closest?.('button');
-    if(button?.id==='discardSavedBtn')pendingFocusId='startGameBtn';
+    if(button?.id==='discardSavedBtn'){
+      pendingFocusId='startGameBtn';
+      try{sessionStorage.setItem(discardFocusKey,'1');}catch{}
+    }
     if(dialog&&((button&&(dialogCloseIds.has(button.id)||dialogTransitionIds.has(button.id)))||(dialog.id==='tutorial'&&event.target===dialog)))restoreBackground();
   },true);
 
@@ -104,4 +108,10 @@
   },true);
 
   watchDialogs();
+  try{
+    if(sessionStorage.getItem(discardFocusKey)==='1'&&!activeDialog()){
+      sessionStorage.removeItem(discardFocusKey);
+      requestAnimationFrame(()=>focusWhenReady('startGameBtn'));
+    }
+  }catch{}
 })();
