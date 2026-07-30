@@ -11,7 +11,11 @@ async function createSavedGame(page) {
   await expect(page.locator('#startScreen')).toHaveClass(/show/);
 
   await page.locator('#startGameBtn').click();
+  await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
   await expect(page.locator('#roundStat')).toContainText('1 / 5');
+  await expect(page.locator('#factText')).not.toHaveText('Choose a game to begin.');
+  await expect(page.locator('#menuBtn')).toBeFocused();
+
   await page.evaluate(() => window.placeGuess(12, 12));
   await expect(page.locator('#lockBtn')).toBeEnabled();
   await expect.poll(() => page.evaluate(() => Boolean(localStorage.getItem('chronoglobeActiveGame')))).toBe(true);
