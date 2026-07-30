@@ -60,9 +60,13 @@
   const watchDialogs=()=>{
     const endScreen=document.getElementById('endScreen');
     const endTitle=document.getElementById('endTitle');
+    const resumeGameDialog=document.getElementById('resumeGameDialog');
+    const startScreen=document.getElementById('startScreen');
+    const startGameBtn=document.getElementById('startGameBtn');
     const observer=new MutationObserver(records=>{
       syncModalIsolation();
       if(records.some(record=>record.target===endScreen)&&endScreen?.classList.contains('show'))requestAnimationFrame(()=>endTitle?.focus({preventScroll:true}));
+      if(records.some(record=>record.target===resumeGameDialog)&&!resumeGameDialog?.classList.contains('show')&&startScreen?.classList.contains('show'))requestAnimationFrame(()=>startGameBtn?.focus({preventScroll:true}));
     });
     document.querySelectorAll('[role="dialog"][aria-modal="true"]').forEach(dialog=>observer.observe(dialog,{attributes:true,attributeFilter:['class']}));
     syncModalIsolation();
@@ -80,7 +84,6 @@
     const closer=event.target?.closest?.('button');
     const tutorial=document.getElementById('tutorial');
     if((closer&&closerIds.has(closer.id))||event.target===tutorial)restoreFocus();
-    if(closer?.id==='discardSavedBtn')requestAnimationFrame(()=>document.getElementById('startGameBtn')?.focus({preventScroll:true}));
   });
 
   document.addEventListener('keydown',event=>{
