@@ -16,7 +16,7 @@ async function startCleanGame(page) {
   await expect(page.locator('#menuBtn')).toBeVisible();
 }
 
-test('clicking the game menu backdrop restores the active round and opener focus', async ({ page }, testInfo) => {
+test('clicking the game menu backdrop keeps the modal open and the round isolated', async ({ page }, testInfo) => {
   desktopOnly(testInfo);
   await startCleanGame(page);
 
@@ -24,12 +24,21 @@ test('clicking the game menu backdrop restores the active round and opener focus
 
   const menu = page.locator('#gameMenu');
   const game = page.locator('#gameApp');
+  const resume = page.locator('#resumeBtn');
 
   await expect(menu).toHaveClass(/show/);
   await expect(game).toHaveAttribute('aria-hidden', 'true');
   await expect(game).toHaveAttribute('inert', '');
+  await expect(resume).toBeFocused();
 
   await menu.click({ position: { x: 5, y: 5 } });
+
+  await expect(menu).toHaveClass(/show/);
+  await expect(game).toHaveAttribute('aria-hidden', 'true');
+  await expect(game).toHaveAttribute('inert', '');
+  await expect(resume).toBeFocused();
+
+  await page.keyboard.press('Escape');
 
   await expect(menu).not.toHaveClass(/show/);
   await expect(game).toHaveAttribute('aria-hidden', 'false');
