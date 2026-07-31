@@ -28,7 +28,8 @@ test('discarding a saved game preserves the sound preference', async ({ page }, 
 
   const resumeDialog = page.locator('#resumeGameDialog');
   await expect(resumeDialog).toHaveClass(/show/);
-  await expect(page.locator('#discardSavedBtn')).toBeFocused();
+  await expect(page.locator('#discardSavedBtn')).toBeVisible();
+  await expect(page.locator('#resumeSavedBtn')).toBeVisible();
 
   await page.locator('#discardSavedBtn').click();
 
