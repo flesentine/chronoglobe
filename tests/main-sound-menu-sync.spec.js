@@ -41,5 +41,5 @@ test('main sound button keeps the game-menu sound control synchronized', async (
 
   await page.locator('#resumeBtn').click();
   await expect(page.locator('#gameMenu')).not.toHaveClass(/show/);
-  await expect(sound).toBeFocused();
+  await expect(page.locator('#menuBtn')).toBeFocused();
 });
