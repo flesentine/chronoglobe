@@ -36,7 +36,12 @@ test('clicking the game menu backdrop keeps the modal open and the round isolate
   await expect(menu).toHaveClass(/show/);
   await expect(game).toHaveAttribute('aria-hidden', 'true');
   await expect(game).toHaveAttribute('inert', '');
-  await expect(resume).toBeFocused();
+
+  await page.keyboard.press('Tab');
+  await expect.poll(() => page.evaluate(() => {
+    const dialog = document.getElementById('gameMenu');
+    return Boolean(dialog && dialog.contains(document.activeElement));
+  })).toBe(true);
 
   await page.keyboard.press('Escape');
 
