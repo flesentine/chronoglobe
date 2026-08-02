@@ -46,11 +46,11 @@ test('using a hint resets the per-round cap on the following round', async ({ pa
     return page.evaluate(() => {
       const saved = JSON.parse(localStorage.getItem('chronoglobeActiveGame'));
       return {
-        round: saved?.state?.round,
-        hintUsed: saved?.state?.hintUsed,
-        roundCap: saved?.state?.roundCap,
-        hintsUsed: saved?.state?.hintsUsed,
-        adjustedMaximum: saved?.state?.adjustedMaximum
+        round: saved?.round,
+        hintUsed: saved?.hintUsed,
+        roundCap: saved?.roundCap,
+        hintsUsed: saved?.hintsUsed,
+        adjustedMaximum: saved?.adjustedMaximum
       };
     });
   }).toEqual({
