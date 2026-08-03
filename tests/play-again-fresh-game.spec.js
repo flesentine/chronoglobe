@@ -4,6 +4,31 @@ function desktopOnly(testInfo) {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'Play Again reset test runs once on desktop Chromium');
 }
 
+async function waitForFreshRoundOne(page, difficulty, totalRounds) {
+  await expect.poll(() => page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('chronoglobeActiveGame'));
+    return {
+      phase: saved?.phase,
+      difficulty: saved?.config?.difficulty,
+      totalRounds: saved?.totalRounds,
+      round: saved?.round,
+      resultCount: saved?.roundResults?.length,
+      guess: saved?.guess
+    };
+  })).toEqual({
+    phase: 'guessing',
+    difficulty,
+    totalRounds,
+    round: 1,
+    resultCount: 0,
+    guess: null
+  });
+
+  await expect(page.locator('#lockBtn')).toBeVisible();
+  await expect(page.locator('#lockBtn')).toBeDisabled();
+  await expect(page.locator('#nextBtn')).toBeHidden();
+}
+
 async function startConfiguredGame(page) {
   await page.goto('/');
   await page.evaluate(() => {
@@ -29,6 +54,7 @@ async function startConfiguredGame(page) {
 
   await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
   await expect(page.locator('#gameConfigText')).toHaveText('Hard · 5 rounds');
+  await waitForFreshRoundOne(page, 'hard', 5);
 }
 
 test('Play Again clears finished progress and starts a fresh game with the same setup', async ({ page }, testInfo) => {
@@ -78,6 +104,7 @@ test('Play Again clears finished progress and starts a fresh game with the same 
 
   await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
   await expect(page.locator('#gameConfigText')).toHaveText('Hard · 5 rounds');
+  await waitForFreshRoundOne(page, 'hard', 5);
   await expect(page.locator('#roundStat')).toHaveText('1 / 5');
   await expect(page.locator('#scoreStat')).toHaveText('0');
   await expect(page.locator('#streakStat')).toHaveText('0');
