@@ -13,8 +13,17 @@ async function startConfiguredGame(page) {
   });
   await page.reload();
 
-  await page.locator('input[name="difficultyChoice"][value="hard"]').check();
-  await page.locator('input[name="roundChoice"][value="5"]').check();
+  const hardChoice = page.locator('label.choice').filter({
+    has: page.locator('input[name="difficultyChoice"][value="hard"]')
+  });
+  const fiveRoundChoice = page.locator('label.choice').filter({
+    has: page.locator('input[name="roundChoice"][value="5"]')
+  });
+
+  await hardChoice.click();
+  await fiveRoundChoice.click();
+  await expect(page.locator('input[name="difficultyChoice"][value="hard"]')).toBeChecked();
+  await expect(page.locator('input[name="roundChoice"][value="5"]')).toBeChecked();
   await expect(page.locator('#startGameBtn')).toHaveText('Start 5-round Hard game');
   await page.locator('#startGameBtn').click();
 
