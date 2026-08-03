@@ -4,6 +4,27 @@ function desktopOnly(testInfo) {
   test.skip(testInfo.project.name !== 'desktop-chromium', 'Final round resume test runs once on desktop Chromium');
 }
 
+async function waitForRoundOneReady(page) {
+  await expect.poll(() => page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('chronoglobeActiveGame'));
+    return {
+      phase: saved?.phase,
+      round: saved?.round,
+      resultCount: saved?.roundResults?.length,
+      guess: saved?.guess
+    };
+  })).toEqual({
+    phase: 'guessing',
+    round: 1,
+    resultCount: 0,
+    guess: null
+  });
+
+  await expect(page.locator('#lockBtn')).toBeVisible();
+  await expect(page.locator('#lockBtn')).toBeDisabled();
+  await expect(page.locator('#nextBtn')).toBeHidden();
+}
+
 async function startCleanGame(page) {
   await page.goto('/');
   await page.evaluate(() => {
@@ -13,6 +34,7 @@ async function startCleanGame(page) {
   await page.reload();
   await page.locator('#startGameBtn').click();
   await expect(page.locator('#gameApp')).toHaveAttribute('aria-hidden', 'false');
+  await waitForRoundOneReady(page);
 }
 
 test('a resumed fifth-round result opens the final score without changing its totals', async ({ page }, testInfo) => {
