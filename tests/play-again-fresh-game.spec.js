@@ -10,7 +10,7 @@ async function waitForFreshRoundOne(page, difficulty, totalRounds) {
     return {
       phase: saved?.phase,
       difficulty: saved?.config?.difficulty,
-      totalRounds: saved?.totalRounds,
+      totalRounds: saved?.config?.totalRounds,
       round: saved?.round,
       resultCount: saved?.roundResults?.length,
       guess: saved?.guess
@@ -121,7 +121,7 @@ test('Play Again clears finished progress and starts a fresh game with the same 
     return {
       phase: saved?.phase,
       difficulty: saved?.config?.difficulty,
-      totalRounds: saved?.totalRounds,
+      totalRounds: saved?.config?.totalRounds,
       round: saved?.round,
       score: saved?.score,
       resultCount: saved?.roundResults?.length,
